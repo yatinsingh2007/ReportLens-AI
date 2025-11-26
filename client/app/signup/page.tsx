@@ -10,34 +10,22 @@ import { GradientBackground } from "@/components/ui/gradient-background"
 import { SlideUp } from "@/components/ui/animated-text"
 import { Eye, EyeOff } from "lucide-react"
 
+interface SignUpData {
+    name: string
+    email: string
+    password: string
+}
+
 export default function SignupPage() {
-    const [showPassword, setShowPassword] = useState(false)
-    const [formData, setFormData] = useState({
+    const [showPassword, setShowPassword] = useState<boolean>(false)
+    const [formData, setFormData] = useState<SignUpData>({
         name: "",
         email: "",
         password: "",
     })
-    const [agreedToTerms, setAgreedToTerms] = useState(false)
-
-    const getPasswordStrength = (password: string) => {
-        let strength = 0
-        if (password.length >= 8) strength++
-        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++
-        if (/\d/.test(password)) strength++
-        if (/[^a-zA-Z\d]/.test(password)) strength++
-        return strength
-    }
-
-    const passwordStrength = getPasswordStrength(formData.password)
-    const strengthLabels = ["Weak", "Fair", "Good", "Strong"]
-    const strengthColors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-emerald-500"]
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        if (!agreedToTerms) {
-            alert("Please agree to the terms and conditions")
-            return
-        }
         console.log("Signup attempt:", formData)
     }
 
@@ -111,25 +99,6 @@ export default function SignupPage() {
                                             )}
                                         </button>
                                     </div>
-
-                                    {formData.password && (
-                                        <div className="space-y-2">
-                                            <div className="flex gap-1">
-                                                {[1, 2, 3, 4].map((level) => (
-                                                    <div
-                                                        key={level}
-                                                        className={`h-1 flex-1 rounded-full transition-colors ${level <= passwordStrength
-                                                            ? strengthColors[passwordStrength - 1]
-                                                            : "bg-muted"
-                                                            }`}
-                                                    />
-                                                ))}
-                                            </div>
-                                            <p className="text-xs text-muted-foreground">
-                                                Password strength: {passwordStrength > 0 ? strengthLabels[passwordStrength - 1] : "Too weak"}
-                                            </p>
-                                        </div>
-                                    )}
                                 </div>
                                 <Button
                                     type="submit"

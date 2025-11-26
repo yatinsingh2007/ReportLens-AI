@@ -11,14 +11,13 @@ import { SlideUp } from "@/components/ui/animated-text"
 import { Eye, EyeOff } from "lucide-react"
 
 export default function LoginPage() {
-    const [showPassword, setShowPassword] = useState(false)
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [rememberMe, setRememberMe] = useState(false)
+    const [showPassword, setShowPassword] = useState<boolean>(false)
+    const [email, setEmail] = useState<string>("")
+    const [password, setPassword] = useState<string>("")
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        console.log("Login attempt:", { email, password, rememberMe })
+        console.log("Login attempt:", { email, password })
     }
 
     return (
@@ -90,7 +89,7 @@ export default function LoginPage() {
                             </form>
 
                             <div className="text-center text-sm">
-                                <span className="text-muted-foreground">Don't have an account? </span>
+                                <span className="text-muted-foreground">Don&apos;t have an account? </span>
                                 <Link href="/signup" className="text-primary hover:underline">
                                     Sign up
                                 </Link>

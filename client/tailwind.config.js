@@ -1,4 +1,5 @@
-const { fontFamily } = require("tailwindcss/defaultTheme")
+/* eslint-disable @typescript-eslint/no-require-imports */
+const { } = require("tailwindcss/defaultTheme")
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

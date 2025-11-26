@@ -2,7 +2,6 @@
 
 import React from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { FileText, Menu, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -48,17 +47,15 @@ export function Navbar() {
                     </Link>
                 </div>
 
-                {/* Desktop CTA Buttons */}
                 <div className="hidden items-center gap-4 md:flex">
                     <Button variant="ghost" asChild>
                         <Link href="/login">Login</Link>
                     </Button>
-                    <Button asChild className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
+                    <Button asChild className="bg-linear-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600">
                         <Link href="/signup">Get Started</Link>
                     </Button>
                 </div>
 
-                {/* Mobile Menu Button */}
                 <button
                     className="md:hidden"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -72,7 +69,6 @@ export function Navbar() {
                 </button>
             </div>
 
-            {/* Mobile Menu */}
             <AnimatePresence>
                 {isMenuOpen && (
                     <motion.div
