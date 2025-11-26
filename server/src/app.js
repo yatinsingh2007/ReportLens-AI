@@ -1,9 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const { prisma } = require("../prisma/dbConfig");
+const { auth } = require("./auth/auth");
 
 
 const app = express();
+
+
+app.use('/api/auth' , auth);
 
 async function main(){
     await prisma.$connect();
