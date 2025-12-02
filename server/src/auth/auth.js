@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { prisma } = require('../../prisma/dbConfig');
+const { prisma } = require('../db/dbConfig');
 const { 
     validateName , validateEmail , validatePassword 
 } = require('../utils/validations/credentials');
