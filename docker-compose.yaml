@@ -1,0 +1,6 @@
+services: 
+    scanner-server:
+        image: reportlensai-scanner-server
+        build: scanner-server
+        ports:
+            - "3000:3000"

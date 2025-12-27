@@ -26,8 +26,7 @@ model User {
 model UserQuery {
   id        String   @id @default(cuid())
   userId    String
-  file      String ?
-  question  String ?
+  query     String
   response  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
