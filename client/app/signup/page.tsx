@@ -5,7 +5,10 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { api } from "@/lib/axios";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 import { Eye, EyeOff } from "lucide-react"
 
@@ -16,6 +19,7 @@ interface SignUpData {
 }
 
 export default function SignupPage() {
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState<boolean>(false)
     const [formData, setFormData] = useState<SignUpData>({
         name: "",
@@ -23,9 +27,21 @@ export default function SignupPage() {
         password: "",
     })
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        console.log("Signup attempt:", formData)
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        try {
+            e.preventDefault();
+            const resp = await api.post("/api/auth/signup", formData);
+            if (resp.status !== 201){
+                toast.error("Failed to create    user");
+                return
+            }
+            toast.success("User created successfully");
+            router.push("/");
+            return
+        } catch (err: unknown) {
+            toast.error("Failed to create user");
+            console.log(err);
+        }
     }
 
     return (

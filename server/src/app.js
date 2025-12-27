@@ -2,10 +2,20 @@ require('dotenv').config();
 const express = require('express');
 const { prisma } = require("./db/dbConfig");
 const { auth } = require("./auth/auth");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 
 const app = express();
 
+app.use(cookieParser());
+
+app.use(cors({
+    origin : "http://localhost:3001" ,
+    credentials : true
+}));
+
+app.use(express.json());
 
 app.use('/api/auth' , auth);
 

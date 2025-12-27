@@ -6,17 +6,35 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
+import { api } from "@/lib/axios"
 import { Eye, EyeOff } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { toast } from "react-hot-toast";
 
 export default function LoginPage() {
+    const router = useRouter()
     const [showPassword, setShowPassword] = useState<boolean>(false)
     const [email, setEmail] = useState<string>("")
     const [password, setPassword] = useState<string>("")
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        console.log("Login attempt:", { email, password })
+    const handleSubmit = async (e: React.FormEvent) => {
+        try {
+            e.preventDefault()
+            const resp = await api.post("/api/auth/login", {
+                email,
+                password
+            });
+            if (resp.status !== 200) {
+                toast.error("Invalid credentials")
+                return
+            }
+            toast.success("Login successful")
+            router.push("/dashboard")
+            return
+        }catch(err : unknown){
+            toast.error("Failed to login");
+            console.log(err);
+        }
     }
 
     return (

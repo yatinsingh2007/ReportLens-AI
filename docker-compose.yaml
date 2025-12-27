@@ -1,4 +1,4 @@
-services: 
+services:
     scanner-server:
         image: reportlensai-scanner-server
         build: scanner-server
