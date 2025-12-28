@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useRef } from "react"
 import { FileUpload } from "@/components/ui/file-upload"
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input"
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/axios";
 import { toast } from "react-hot-toast";
+import { IconPlus } from "@tabler/icons-react";
 
 interface Message {
     id: string
@@ -25,6 +26,7 @@ export default function DashboardPage() {
     ])
     const [loading, setLoading] = useState<boolean>(false);
     const [inputValue, setInputValue] = useState<string>("");
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileUpload = async (files: File[]) => {
         try {
@@ -37,6 +39,16 @@ export default function DashboardPage() {
             toast.error("Failed to upload file");
         }
     }
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            handleFileUpload(Array.from(e.target.files));
+        }
+    };
+
+    const triggerFileInput = () => {
+        fileInputRef.current?.click();
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value)
@@ -141,7 +153,21 @@ export default function DashboardPage() {
                     )}
                 </div>
 
-                <div className="p-4 md:p-6 pb-8 w-full max-w-4xl mx-auto z-10">
+                <div className="p-4 md:p-6 pb-8 w-full max-w-4xl mx-auto z-10 flex items-center gap-2">
+                    <button
+                        onClick={triggerFileInput}
+                        className="p-3 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white transition-colors border border-neutral-700 md:hidden"
+                        aria-label="Upload file"
+                    >
+                        <IconPlus className="w-5 h-5" />
+                    </button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        onChange={handleFileSelect}
+                        accept=".pdf,.png,.jpg,.jpeg"
+                    />
                     <PlaceholdersAndVanishInput
                         placeholders={placeholders}
                         onChange={handleInputChange}
