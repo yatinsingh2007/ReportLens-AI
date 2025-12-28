@@ -34,14 +34,15 @@ auth.post('/login' , async (req , res) => {
 
 auth.post('/signup' , async (req , res) => {
     try{
-        const { name , email , pasword } = req.body;
-        if(!validateName(name) || !validateEmail(email) || !validatePassword(pasword)){
+        const { name , email , password } = req.body;
+        console.log(validateName(name) , validateEmail(email) , validatePassword(password));
+        if(!validateName(name) || !validateEmail(email) || !validatePassword(password)){
             return res.status(400).json({ error: 'Incorrect Format of Credentials' });
         }
-        const hashedPassword = await bcrypt.hash(pasword , 10);
+        const hashedPassword = await bcrypt.hash(password , 10);
         await prisma.user.create({
             data : {
-                name , email , pasword : hashedPassword
+                name , email , password : hashedPassword
             }
         })
         return res.status(201).json({ message: 'User created successfully' });

@@ -32,11 +32,11 @@ export default function SignupPage() {
             e.preventDefault();
             const resp = await api.post("/api/auth/signup", formData);
             if (resp.status !== 201){
-                toast.error("Failed to create    user");
+                toast.error("Failed to create user");
                 return
             }
             toast.success("User created successfully");
-            router.push("/");
+            router.push("/login");
             return
         } catch (err: unknown) {
             toast.error("Failed to create user");
