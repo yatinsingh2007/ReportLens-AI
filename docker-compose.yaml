@@ -1,6 +1,9 @@
 services:
-    scanner-server:
-        image: reportlensai-scanner-server
-        build: scanner-server
+    app:
+        build: ./server
         ports:
-            - "3000:3000"
+            - "${PORT}:${PORT}"
+        environment:
+            - PORT=${PORT}
+            - DATABASE_URL=${DATABASE_URL}
+            - JWT_SECRET=${JWT_SECRET}

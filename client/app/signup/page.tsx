@@ -10,7 +10,7 @@ import { api } from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
 
 interface SignUpData {
     name: string
@@ -21,6 +21,7 @@ interface SignUpData {
 export default function SignupPage() {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
     const [formData, setFormData] = useState<SignUpData>({
         name: "",
         email: "",
@@ -30,9 +31,11 @@ export default function SignupPage() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         try {
             e.preventDefault();
+            setIsLoading(true);
             const resp = await api.post("/api/auth/signup", formData);
-            if (resp.status !== 201){
+            if (resp.status !== 201) {
                 toast.error("Failed to create user");
+                setIsLoading(false);
                 return
             }
             toast.success("User created successfully");
@@ -41,6 +44,7 @@ export default function SignupPage() {
         } catch (err: unknown) {
             toast.error("Failed to create user");
             console.log(err);
+            setIsLoading(false);
         }
     }
 
@@ -113,9 +117,17 @@ export default function SignupPage() {
                         </div>
                         <Button
                             type="submit"
+                            disabled={isLoading}
                             className="w-full bg-linear-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 cursor-pointer text-white font-medium"
                         >
-                            Create Account
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Please wait
+                                </>
+                            ) : (
+                                "Create Account"
+                            )}
                         </Button>
                     </form>
 

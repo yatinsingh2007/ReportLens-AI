@@ -3,13 +3,15 @@
 import React, { useState } from "react"
 import { FileUpload } from "@/components/ui/file-upload"
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { api } from "@/lib/axios";
+import { toast } from "react-hot-toast";
 
 interface Message {
     id: string
     role: "user" | "ai"
     content: string
-    file  : File[] | null
+    file: File[] | null
 }
 
 export default function DashboardPage() {
@@ -18,14 +20,22 @@ export default function DashboardPage() {
             id: "1",
             role: "ai",
             content: "Hello! I'm ReportLens AI. Upload your health reports (PDF) and ask me anything about them.",
-            file : null
+            file: null
         },
     ])
     const [loading, setLoading] = useState<boolean>(false);
     const [inputValue, setInputValue] = useState<string>("");
 
-    const handleFileUpload = (files: File []) => {
-        console.log("Uploaded files:", files)
+    const handleFileUpload = async (files: File[]) => {
+        try {
+            const formData = new FormData();
+            formData.append("file", files[0]);
+            const res = await api.post("/api/file/upload", formData);
+            toast.success("File uploaded successfully");
+        } catch (err: unknown) {
+            console.log(err);
+            toast.error("Failed to upload file");
+        }
     }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +50,7 @@ export default function DashboardPage() {
             id: Date.now().toString(),
             role: "user",
             content: inputValue,
-            file : null
+            file: null
         }
 
         setMessages(prev => [...prev, userMessage])
@@ -50,8 +60,8 @@ export default function DashboardPage() {
             const aiMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: "ai",
-                content: "I've received your query. As an AI health assistant, I'm analyzing your request. Once connected to the backend, I'll provide detailed insights from your medical reports." ,
-                file : null
+                content: "I've received your query. As an AI health assistant, I'm analyzing your request. Once connected to the backend, I'll provide detailed insights from your medical reports.",
+                file: null
             }
             setMessages(prev => [...prev, aiMessage])
             setLoading(false)

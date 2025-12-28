@@ -7,33 +7,37 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { api } from "@/lib/axios"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast";
 
 export default function LoginPage() {
     const router = useRouter()
     const [showPassword, setShowPassword] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
     const [email, setEmail] = useState<string>("")
     const [password, setPassword] = useState<string>("")
 
     const handleSubmit = async (e: React.FormEvent) => {
         try {
             e.preventDefault()
+            setIsLoading(true)
             const resp = await api.post("/api/auth/login", {
                 email,
                 password
             });
             if (resp.status !== 200) {
                 toast.error("Invalid credentials")
+                setIsLoading(false)
                 return
             }
             toast.success("Login successful")
             router.push("/dashboard")
             return
-        }catch(err : unknown){
+        } catch (err: unknown) {
             toast.error("Failed to login");
             console.log(err);
+            setIsLoading(false)
         }
     }
 
@@ -96,9 +100,17 @@ export default function LoginPage() {
                         </div>
                         <Button
                             type="submit"
+                            disabled={isLoading}
                             className="w-full bg-linear-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 cursor-pointer text-white font-medium"
                         >
-                            Sign In
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Please wait
+                                </>
+                            ) : (
+                                "Sign In"
+                            )}
                         </Button>
                     </form>
 
