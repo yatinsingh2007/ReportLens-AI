@@ -2,15 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const { prisma } = require("./db/dbConfig");
 const { auth } = require("./auth/auth");
+const { authMiddleware } = require("./auth/authMiddleware");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const multer = require("multer");
-const path = require("path");
-const upload = multer({
-   dest : "uploads/"
-})
-
-const fs = require("fs");
+const { chat } = require("./chat/chat");
 const app = express();
 
 app.use(cookieParser());
@@ -20,16 +15,10 @@ app.use(cors({
     credentials : true
 }));
 
-app.post('/api/file/upload' , upload.single("file") , async (req , res) => {
-    const filePath = path.resolve(req.file.path)
-    const data = await fs.promises.readFile(filePath)
-    console.log(data);
-    return res.json({message : "File uploaded successfully"})
-})
-
 app.use(express.json());
 
 app.use('/api/auth' , auth);
+app.use("/api/chat" , authMiddleware , chat);
 
 async function main(){
     await prisma.$connect();
