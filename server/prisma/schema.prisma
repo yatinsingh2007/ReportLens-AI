@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
@@ -19,11 +19,11 @@ model User {
 }
 
 model Message {
-  id      String  @id @default(cuid())
+  id      String @id @default(cuid())
   content String
   role    Role
-  chatId  String?
-  chat    Chat?   @relation(fields: [chatId], references: [id])
+  chatId  String
+  chat    Chat   @relation(fields: [chatId], references: [id])
 }
 
 model Chat {

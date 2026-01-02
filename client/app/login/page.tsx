@@ -11,6 +11,10 @@ import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast";
 
+interface chatData {
+    chatId : string
+}
+
 export default function LoginPage() {
     const router = useRouter()
     const [showPassword, setShowPassword] = useState<boolean>(false)
@@ -28,7 +32,11 @@ export default function LoginPage() {
             });
             if (resp.status !== 200) {
                 toast.error("Invalid credentials")
-                setIsLoading(false)
+                setIsLoading(false);
+                const chatData : chatData = await api.get('/api/chat/getChat' , {
+                    withCredentials : true
+                });
+                router.push(`/chat/${chatData.chatId}`)
                 return
             }
             toast.success("Login successful")

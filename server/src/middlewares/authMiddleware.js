@@ -1,6 +1,6 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const { prisma } = require("../../db/dbConfig");
+const { prisma } = require("../db/dbConfig");
 const authMiddleware = async (req, res, next) => {
   try {
     const { token } = req.cookies;
