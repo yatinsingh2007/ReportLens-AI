@@ -21,30 +21,6 @@ const model = generativeAI.getGenerativeModel({
 
 const chat = express.Router();
 
-chat.post('/query' ,  async (req , res) => {
-    try{    
-        const { filePresent } = req.query;
-        if (!filePresent){
-            const { question } = req.body;
-            if (!question){
-                return res.status(400).json({
-                    message : "Question is required"
-                })
-            }
-            const content = await model.generateContent(question);
-            return res.status(200).json({
-                message : content.response.text()
-            })
-        }
-    }catch(err){
-        console.log(err);
-        return res.status(500).json({
-            message : "Internal Server Error"
-        })
-    }
-});
-
-
 chat.post('/fileUpload' , upload.single("file") ,  async (req , res) => {
     try{
         console.log(req.file);
@@ -56,31 +32,32 @@ chat.post('/fileUpload' , upload.single("file") ,  async (req , res) => {
     }
 });
 
-chat.get('/getChat' , async (req , res) => {
+
+chat.get("/getAllChatIds" , async (req , res) => {
     try{
-        const ourUser = req.user;
-        const userId = ourUser.id;
-        const chatRoom = await prisma.chat.findMany({
+        const userId = req.user.id;
+        if (!userId){
+            return res.status(401).json({
+                "error" : "Unauthorized"
+            })
+        }
+        const chatIds = await prisma.chat.findMany({
             where : {
-                userId : userId,
+                userId
+            } ,
+            select : {
+                id : true
             } ,
             orderBy : {
                 createdAt : "desc"
             }
         });
-        if (!chatRoom){
-            const newChat = await prisma.chat.create({
-                data : {
-                    userId : userId
-                }
-            });
-            return res.status(200).json({
-                chatId : newChat.id
+        if (chatIds.length === 0){
+            return res.status(404).json({
+                "error" : "Not Found"
             })
         }
-        return res.status(200).json({
-            chatId : chatRoom.id
-        })
+        return res.status(200).json(chatIds)
     }catch(err){
         console.log(err);
         return res.status(500).json({
@@ -89,28 +66,46 @@ chat.get('/getChat' , async (req , res) => {
     }
 });
 
-chat.get("/getAllChats" , async (req , res) => {
+chat.get('/messages/:roomId' , async (req , res) => {
     try{
-        const userId = req.user.id;
-        if (!userId){
-            return res.status(401).json({
-                "error" : "Unauthorized"
-            })
+        const { roomId } = req.params;
+        if (!roomId){
+            return res.status(400).json({
+                "error" : "roomId is required"
+            });
         }
-        const ChatIds = await prisma.user.findMany({
+        const messages = await prisma.message.findMany({
             where : {
-                userId
+                chatId : roomId
             } ,
-            select : {
-                id : true
+            orderBy : {
+                createdAt : "desc"
             }
         });
-        if (ChatIds.length === 0){
-            return res.status(404).json({
-                "error" : "Not Found"
+        return res.status(200).json(messages)
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({
+            "error" : "Internal Server Error"
+        })
+    }
+
+});
+
+
+chat.post('/upload/message/:roomId' , async (req , res) => {
+    try{
+        const { roomId } = req.params;
+        const { query } = req.body;
+        if (!roomId){
+            return res.status(400).json({
+                "error" : "RoomId is required"
             })
         }
-        return res.status(200).json(ChatIds)
+        const resp = await model.generateContent(query);
+        return res.status(200).json({
+            response : resp.response.text()
+        })
     }catch(err){
         console.log(err);
         return res.status(500).json({

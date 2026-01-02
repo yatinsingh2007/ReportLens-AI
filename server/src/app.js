@@ -6,6 +6,7 @@ const { authMiddleware } = require("./middlewares/authMiddleware");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { chat } = require("./chat/chat");
+const {dashboard} = require("./dashboard/dashboard");
 const app = express();
 
 app.use(cookieParser());
@@ -19,6 +20,8 @@ app.use(express.json());
 
 app.use('/api/auth' , auth);
 app.use("/api/chat" , authMiddleware , chat);
+
+app.use("/api/dashboard" , authMiddleware , dashboard);
 
 async function main(){
     await prisma.$connect();
