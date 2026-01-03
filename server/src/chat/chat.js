@@ -46,7 +46,8 @@ chat.get("/getAllChatIds" , async (req , res) => {
                 userId
             } ,
             select : {
-                id : true
+                id : true ,
+                createdAt : true
             } ,
             orderBy : {
                 createdAt : "desc"
@@ -105,6 +106,25 @@ chat.post('/upload/message/:roomId' , async (req , res) => {
         const resp = await model.generateContent(query);
         return res.status(200).json({
             response : resp.response.text()
+        })
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({
+            "error" : "Internal Server Error"
+        })
+    }
+});
+
+chat.post('/create' , async (req , res) => {
+    try{
+        const id = req.user.id;
+        const data = await prisma.chat.create({
+            data : {
+                userId : id
+            }
+        });
+        return res.status(201).json({
+            "message" : "chat created successfully"
         })
     }catch(err){
         console.log(err);

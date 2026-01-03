@@ -10,10 +10,8 @@ import { api } from "@/lib/axios"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast";
+import { isAxiosError} from "axios";
 
-interface chatData {
-    chatId : string
-}
 
 export default function LoginPage() {
     const router = useRouter()
@@ -22,26 +20,34 @@ export default function LoginPage() {
     const [email, setEmail] = useState<string>("")
     const [password, setPassword] = useState<string>("")
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit  = async (e: React.FormEvent) : Promise<void> => {
         try {
             e.preventDefault()
             setIsLoading(true)
-            const resp = await api.post("/api/auth/login", {
+            const resp : { data : { message : string } } = await api.post("/api/auth/login", {
                 email,
                 password
             });
-            if (resp.status !== 200) {
-                toast.error("Invalid credentials")
-                setIsLoading(false);
-                const chatData : chatData = await api.get('/api/chat/getChat' , {
-                    withCredentials : true
-                });
-                router.push(`/chat/${chatData.chatId}`)
-                return
-            }
-            toast.success("Login successful")
+            toast.success(resp.data.message)
+            router.push("/dashboard")
             return
         } catch (err: unknown) {
+            if (isAxiosError(err)){
+                const status = err.response?.status;
+
+                if (status === 404) {
+                    toast.error("User not found");
+                } else if (status === 401) {
+                    toast.error("Invalid credentials");
+                } else {
+                    toast.error("Login failed");
+                }
+
+                console.error(err.response?.data);
+            }else {
+                toast.error("Something went wrong");
+                console.error(err);
+            }
             toast.error("Failed to login");
             console.log(err);
             setIsLoading(false)
