@@ -7,8 +7,7 @@
     <list default="true" id="9c6b55fc-0f87-4999-8f38-46324106fd80" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/dashboard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/dashboard/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/app/login/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/login/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/chat/chat.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/chat/chat.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/server/prisma/schema.prisma" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +74,7 @@
       <option name="presentableId" value="Default" />
       <updated>1767340810234</updated>
       <workItem from="1767340811560" duration="423000" />
-      <workItem from="1767344527092" duration="16904000" />
+      <workItem from="1767344527092" duration="26518000" />
     </task>
     <servers />
   </component>

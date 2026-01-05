@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { api } from "@/lib/axios";
 import { toast } from "react-hot-toast";
 import { IconPlus, IconMessage, IconMenu2, IconX } from "@tabler/icons-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from 'react-markdown';
@@ -35,6 +36,7 @@ export default function DashboardPage() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [chatId, setChatId] = useState<string>("");
+    const [showChat, setShowChat] = useState<boolean>(false);
     async function callChatIds(): Promise<void> {
         try {
             const res: { data: ChatRoom[] } = await api.get(
@@ -52,7 +54,7 @@ export default function DashboardPage() {
         } catch (err) {
             console.log(err);
             if (isAxiosError(err)) {
-                if (err.response?.status === 401){
+                if (err.response?.status === 401) {
                     router.push('/login');
                     toast.error("Unauthorized Please Login to Access");
                 }
@@ -67,7 +69,7 @@ export default function DashboardPage() {
     async function getAllMessagesOfChat(chatId: string): Promise<void> {
         try {
             const res: { data: Message[] } = await api.get(
-                `/api/messages/${chatId}`,
+                `/api/chat/messages/${chatId}`,
                 { withCredentials: true }
             );
             setMessages(res.data);
@@ -161,9 +163,7 @@ export default function DashboardPage() {
             };
 
             const finalMessages = [...updatedMessages, aiMsg];
-            // Update storage with AI response
 
-            // Redirect to the newly created chat
             router.push(`/dashboard/${currentChatId}`);
 
         } catch (err) {
@@ -221,10 +221,17 @@ export default function DashboardPage() {
                 <h2 className="text-xs font-semibold text-neutral-400 mb-2 uppercase tracking-wider">Recent Chats</h2>
                 {chatRooms.length === 0 && <p className="text-xs text-neutral-600">No history yet.</p>}
                 {chatRooms.map((chat: ChatRoom) => (
-                    <Link
+                    <div
                         key={chat.id}
-                        href={`/dashboard/${chat.id}`}
-                        onClick={() => setIsMobileMenuOpen(false)}
+                        onClick={async (e : React.MouseEvent<HTMLDivElement>) => {
+                            e.preventDefault();
+                            try {
+                                  const resp : { data : Message[] } = await api.get(`/api/chat/messages/${chat.id}`);
+                                  setMessages([...resp.data]);
+                            }catch(e : unknown) {
+                                console.log(e)
+                            }
+                        }}
                         className={cn(
                             "flex items-center gap-3 p-3 rounded-lg transition-colors cursor-pointer text-sm truncate",
                             "text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200"
@@ -234,7 +241,7 @@ export default function DashboardPage() {
                         <span className="truncate">
                             {new Date(chat.createdAt).toLocaleString()}
                         </span>
-                    </Link>
+                    </div>
                 ))}
             </div>
 
@@ -259,12 +266,12 @@ export default function DashboardPage() {
 
     return (
         <div className="flex min-h-screen bg-neutral-900 text-white font-sans overflow-hidden">
-            {/* Desktop Sidebar */}
+
             <div className="w-80 border-r border-neutral-800 bg-black/20 p-6 flex-col gap-6 hidden md:flex">
                 <SidebarContent />
             </div>
 
-            {/* Mobile Sidebar Overlay */}
+
             {isMobileMenuOpen && (
                 <div className="fixed inset-0 z-50 md:hidden">
                     <div
@@ -298,7 +305,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
-                    {!showDashboard ? (
+                    {!showDashboard || messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center space-y-6 relative overflow-hidden">
                             {/* Background Effects */}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px] -z-10 animate-pulse" />
@@ -327,7 +334,7 @@ export default function DashboardPage() {
                         </div>
                     ) : (
                         <>
-                            {messages.map((msg) => (
+                            {messages.length !== 0 && messages.map((msg: Message) => (
                                 <div
                                     key={msg.id}
                                     className={cn(
@@ -349,10 +356,9 @@ export default function DashboardPage() {
                             ))}
                             {loading && (
                                 <div className="flex justify-start w-full mb-4">
-                                    <div className="bg-neutral-800 rounded-2xl rounded-bl-none px-5 py-4 border border-neutral-700 flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                                        <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                                        <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"></div>
+                                    <div className="flex flex-col space-y-2 p-4 bg-neutral-800/50 rounded-2xl rounded-bl-none border border-neutral-700/50 max-w-[75%]">
+                                        <Skeleton className="h-4 w-[200px] bg-neutral-700" />
+                                        <Skeleton className="h-4 w-[150px] bg-neutral-700" />
                                     </div>
                                 </div>
                             )}
