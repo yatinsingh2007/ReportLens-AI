@@ -9,7 +9,6 @@ import { toast } from "react-hot-toast";
 import { IconPlus, IconMessage, IconMenu2, IconX } from "@tabler/icons-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import ReactMarkdown from 'react-markdown';
 import { isAxiosError } from "axios";
 

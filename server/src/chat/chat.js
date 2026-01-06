@@ -7,6 +7,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const multer = require("multer");
 
+const fs = require('fs');
+
 const upload = multer({
     storage : multer.memoryStorage()
 })
@@ -125,6 +127,66 @@ chat.post('/create' , async (req , res) => {
         });
         return res.status(201).json({
             "message" : "chat created successfully"
+        })
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({
+            "error" : "Internal Server Error"
+        })
+    }
+});
+
+
+chat.post('/userQuery' , async (req , res) => {
+    try{
+        const id = req.user.id;
+        const { query , chatId } = req.body;
+        if (!id){
+            return res.status(401).json({
+                "error" : "Unauthorized"
+            })
+        }
+        if (!query || !chatId){
+            return res.status(400).json({
+                "error" : "User did not Provide any Input or question to ask or No ChatRoom Identification."
+            })
+        }
+        const chatRoom = await prisma.chat.findUnique({
+            where : {
+                chatId : chatId ,
+                userId : id
+            }
+        })
+        if (!chatRoom){
+            return res.status(404).json({
+                "error" : "No such ChatRoom exists"
+            })
+        }
+        await prisma.chat.create({
+            messages : {
+                create : {
+                    content : query,
+                    role : "User" ,
+                    chatId : chatId
+                }
+            }
+        });
+
+        const data = await fs.promises.readFile("./prompts/queryPrompt.txt" , "utf-8");
+        const content = data.replace("{{user_question}}" , query);
+        const response = await model.generateContent(content);
+        const resp = response.response.text();
+        await prisma.chat.create({
+            messages : {
+                create : {
+                    content : resp,
+                    role : "Assistant" ,
+                    chatId : chatId
+                }
+            }
+        });
+        return res.status(200).json({
+            response : resp
         })
     }catch(err){
         console.log(err);
