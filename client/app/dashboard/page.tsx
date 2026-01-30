@@ -16,7 +16,6 @@ interface Message {
     id: string
     role: "user" | "ai"
     content: string
-    file?: File[] | null
     timestamp: number
 }
 
@@ -34,8 +33,8 @@ export default function DashboardPage() {
     const [inputValue, setInputValue] = useState<string>("");
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [messageLoader , setMessageLoader] = useState<boolean>(false);
     const [chatId, setChatId] = useState<string>("");
-    const [showChat, setShowChat] = useState<boolean>(false);
     async function callChatIds(): Promise<void> {
         try {
             const res: { data: ChatRoom[] } = await api.get(
@@ -93,21 +92,9 @@ export default function DashboardPage() {
         try {
             const formData = new FormData();
             formData.append("file", files[0]);
-            await api.post("/api/chat/fileUpload", formData);
+            const resp :  { data : Message } = await api.post("/api/chat/fileUpload", formData);
             toast.success("File uploaded successfully");
-
-            const uploadMsg: Message = {
-                id: crypto.randomUUID(),
-                role: 'user',
-                content: `[Uploaded File: ${files[0].name}]`,
-                timestamp: Date.now()
-            };
-
-            const newChatId = crypto.randomUUID();
-            const updatedMessages = [...messages, uploadMsg];
-            // saveChatToStorage(newChatId, updatedMessages);
-            router.push(`/dashboard/${newChatId}`);
-
+            setMessages((prev) => [...prev, resp.data]);
         } catch (err: unknown) {
             console.log(err);
             toast.error("Failed to upload file");
@@ -131,45 +118,22 @@ export default function DashboardPage() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!inputValue.trim()) return;
-
-        const currentChatId = crypto.randomUUID();
-
-        const newMsg: Message = {
-            id: crypto.randomUUID(),
-            role: 'user',
-            content: inputValue,
-            timestamp: Date.now()
-        };
-
-        const updatedMessages = [...messages, newMsg];
-        setMessages(updatedMessages);
-        // saveChatToStorage(currentChatId, updatedMessages);
-        setInputValue("");
-        setLoading(true);
-
         try {
-            const resp = await api.post("/api/chat/query?filePresent=false", {
-                question: inputValue
-            }, {
-                withCredentials: true
+            setMessageLoader(true)
+            const newMsg = inputValue.trim();
+            const resp : { data : Message[] } = await api.post("/api/chat/userQuery" , {
+                body : {
+                    query : newMsg ,
+                    chatId : chatId
+                }
             });
-
-            const aiMsg: Message = {
-                id: crypto.randomUUID(),
-                role: 'ai',
-                content: resp.data.message,
-                timestamp: Date.now()
-            };
-
-            const finalMessages = [...updatedMessages, aiMsg];
-
-            router.push(`/dashboard/${currentChatId}`);
-
+            setMessages(resp.data);
+            setInputValue("");
         } catch (err) {
             toast.error("Failed to send message");
             console.log(err);
         } finally {
-            setLoading(false);
+            setMessageLoader(false)
         }
     }
 
@@ -291,7 +255,6 @@ export default function DashboardPage() {
 
             <div className="flex-1 flex flex-col relative bg-neutral-950 h-screen">
 
-                {/* Mobile Header */}
                 <div className="md:hidden flex items-center justify-between p-4 border-b border-neutral-800">
                     <button
                         onClick={() => setIsMobileMenuOpen(true)}
@@ -300,15 +263,14 @@ export default function DashboardPage() {
                         <IconMenu2 className="w-6 h-6" />
                     </button>
                     <span className="font-bold text-white">ReportLens</span>
-                    <div className="w-8" /> {/* Spacer for balance */}
+                    <div className="w-8" />
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
+                <div className={`flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth`}>
                     {!showDashboard || messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center space-y-6 relative overflow-hidden">
-                            {/* Background Effects */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px] -z-10 animate-pulse" />
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-cyan-500/10 rounded-full blur-[80px] -z-10" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px] -z-50 animate-pulse opacity-50" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-cyan-500/10 rounded-full blur-[80px] z-10" />
 
                             <div className="relative z-10 flex flex-col items-center backdrop-blur-md bg-neutral-900/40 p-8 rounded-2xl border border-neutral-800/50 shadow-2xl max-w-lg w-full mx-4">
                                 <div className="h-20 w-20 rounded-full bg-linear-to-r from-emerald-500 to-cyan-500 flex items-center justify-center font-bold text-3xl text-white mb-6 shadow-lg shadow-emerald-500/20">
