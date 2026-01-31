@@ -10,7 +10,7 @@ import { api } from "@/lib/axios"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast";
-import { isAxiosError} from "axios";
+import { isAxiosError } from "axios";
 
 
 export default function LoginPage() {
@@ -20,11 +20,11 @@ export default function LoginPage() {
     const [email, setEmail] = useState<string>("")
     const [password, setPassword] = useState<string>("")
 
-    const handleSubmit  = async (e: React.FormEvent) : Promise<void> => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         try {
             e.preventDefault()
             setIsLoading(true)
-            const resp : { data : { message : string } } = await api.post("/api/auth/login", {
+            const resp: { data: { message: string } } = await api.post("/api/auth/login", {
                 email,
                 password
             });
@@ -32,7 +32,7 @@ export default function LoginPage() {
             router.push("/dashboard")
             return
         } catch (err: unknown) {
-            if (isAxiosError(err)){
+            if (isAxiosError(err)) {
                 const status = err.response?.status;
 
                 if (status === 404) {
@@ -44,7 +44,7 @@ export default function LoginPage() {
                 }
 
                 console.error(err.response?.data);
-            }else {
+            } else {
                 toast.error("Something went wrong");
                 console.error(err);
             }
@@ -114,7 +114,7 @@ export default function LoginPage() {
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-linear-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 cursor-pointer text-white font-medium"
+                            className="w-full bg-primary hover:bg-primary/90 cursor-pointer text-white font-medium"
                         >
                             {isLoading ? (
                                 <>
@@ -129,7 +129,7 @@ export default function LoginPage() {
 
                     <div className="text-center text-sm">
                         <span className="text-muted-foreground">Don&apos;t have an account? </span>
-                        <Link href="/signup" className="text-emerald-600 hover:text-emerald-500 font-medium hover:underline">
+                        <Link href="/signup" className="text-primary hover:text-primary/80 font-medium hover:underline">
                             Sign up
                         </Link>
                     </div>

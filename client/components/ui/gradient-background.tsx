@@ -8,7 +8,7 @@ export function GradientBackground({ children }: { children: React.ReactNode }) 
         <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
             {/* Animated gradient orbs */}
             <motion.div
-                className="absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl"
+                className="absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl"
                 animate={{
                     scale: [1, 1.2, 1],
                     x: [0, 50, 0],
@@ -21,7 +21,7 @@ export function GradientBackground({ children }: { children: React.ReactNode }) 
                 }}
             />
             <motion.div
-                className="absolute right-1/4 top-1/3 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl"
+                className="absolute right-1/4 top-1/3 h-96 w-96 rounded-full bg-sky-500/10 blur-3xl"
                 animate={{
                     scale: [1, 1.3, 1],
                     x: [0, -50, 0],

@@ -18,9 +18,9 @@ export function GridBackground({ children }: { children: React.ReactNode }) {
 export function AnimatedGridPattern() {
     return (
         <div className="absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#10b98120_1px,transparent_1px),linear-gradient(to_bottom,#10b98120_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#3b82f615_1px,transparent_1px),linear-gradient(to_bottom,#3b82f615_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
             <motion.div
-                className="absolute -left-1/2 top-0 h-[500px] w-[500px] rounded-full bg-emerald-500/30 blur-[120px]"
+                className="absolute -left-1/2 top-0 h-[500px] w-[500px] rounded-full bg-blue-500/20 blur-[120px]"
                 animate={{
                     x: [0, 100, 0],
                     y: [0, 50, 0],
@@ -32,7 +32,7 @@ export function AnimatedGridPattern() {
                 }}
             />
             <motion.div
-                className="absolute -right-1/2 top-1/4 h-[500px] w-[500px] rounded-full bg-cyan-500/30 blur-[120px]"
+                className="absolute -right-1/2 top-1/4 h-[500px] w-[500px] rounded-full bg-sky-500/20 blur-[120px]"
                 animate={{
                     x: [0, -100, 0],
                     y: [0, -50, 0],

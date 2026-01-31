@@ -33,7 +33,7 @@ export default function DashboardPage() {
     const [inputValue, setInputValue] = useState<string>("");
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [messageLoader , setMessageLoader] = useState<boolean>(false);
+    const [messageLoader, setMessageLoader] = useState<boolean>(false);
     const [chatId, setChatId] = useState<string>("");
     async function callChatIds(): Promise<void> {
         try {
@@ -92,7 +92,7 @@ export default function DashboardPage() {
         try {
             const formData = new FormData();
             formData.append("file", files[0]);
-            const resp :  { data : Message } = await api.post("/api/chat/fileUpload", formData);
+            const resp: { data: Message } = await api.post("/api/chat/fileUpload", formData);
             toast.success("File uploaded successfully");
             setMessages((prev) => [...prev, resp.data]);
         } catch (err: unknown) {
@@ -121,10 +121,10 @@ export default function DashboardPage() {
         try {
             setMessageLoader(true)
             const newMsg = inputValue.trim();
-            const resp : { data : Message[] } = await api.post("/api/chat/userQuery" , {
-                body : {
-                    query : newMsg ,
-                    chatId : chatId
+            const resp: { data: Message[] } = await api.post("/api/chat/userQuery", {
+                body: {
+                    query: newMsg,
+                    chatId: chatId
                 }
             });
             setMessages(resp.data);
@@ -166,13 +166,13 @@ export default function DashboardPage() {
     const SidebarContent = () => (
         <>
             <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-full bg-linear-to-r from-emerald-500 to-cyan-500 flex items-center justify-center font-bold text-sm text-white">RL</div>
+                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center font-bold text-sm text-white">RL</div>
                 <h1 className="text-xl font-bold tracking-tight text-white">ReportLens</h1>
             </div>
 
             <div className="flex flex-col gap-2">
                 <button
-                    className="flex items-center gap-2 w-full p-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-all font-medium text-sm"
+                    className="flex items-center gap-2 w-full p-3 rounded-lg bg-primary hover:bg-primary/90 text-white transition-all font-medium text-sm"
                     onClick={handleCreateChat}
                 >
                     <IconPlus className="w-4 h-4" />
@@ -186,12 +186,12 @@ export default function DashboardPage() {
                 {chatRooms.map((chat: ChatRoom) => (
                     <div
                         key={chat.id}
-                        onClick={async (e : React.MouseEvent<HTMLDivElement>) => {
+                        onClick={async (e: React.MouseEvent<HTMLDivElement>) => {
                             e.preventDefault();
                             try {
-                                  const resp : { data : Message[] } = await api.get(`/api/chat/messages/${chat.id}`);
-                                  setMessages([...resp.data]);
-                            }catch(e : unknown) {
+                                const resp: { data: Message[] } = await api.get(`/api/chat/messages/${chat.id}`);
+                                setMessages([...resp.data]);
+                            } catch (e: unknown) {
                                 console.log(e)
                             }
                         }}
@@ -269,11 +269,11 @@ export default function DashboardPage() {
                 <div className={`flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth`}>
                     {!showDashboard || messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center space-y-6 relative overflow-hidden">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px] -z-50 animate-pulse opacity-50" />
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-cyan-500/10 rounded-full blur-[80px] z-10" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] -z-50 animate-pulse opacity-50" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-sky-500/10 rounded-full blur-[80px] z-10" />
 
                             <div className="relative z-10 flex flex-col items-center backdrop-blur-md bg-neutral-900/40 p-8 rounded-2xl border border-neutral-800/50 shadow-2xl max-w-lg w-full mx-4">
-                                <div className="h-20 w-20 rounded-full bg-linear-to-r from-emerald-500 to-cyan-500 flex items-center justify-center font-bold text-3xl text-white mb-6 shadow-lg shadow-emerald-500/20">
+                                <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center font-bold text-3xl text-white mb-6 shadow-lg shadow-primary/20">
                                     RL
                                 </div>
                                 <h2 className="text-3xl font-bold text-white tracking-tight mb-3">Welcome to ReportLens</h2>
@@ -283,9 +283,9 @@ export default function DashboardPage() {
 
                                 <button
                                     onClick={handleCreateChat}
-                                    className="group relative inline-flex h-12 overflow-hidden rounded-full p-px focus:outline-hidden focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-neutral-950 w-full max-w-xs hover:shadow-emerald-500/20 hover:shadow-lg transition-all"
+                                    className="group relative inline-flex h-12 overflow-hidden rounded-full p-px focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-neutral-950 w-full max-w-xs hover:shadow-primary/20 hover:shadow-lg transition-all"
                                 >
-                                    <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#10b981_0%,#06b6d4_50%,#10b981_100%)]" />
+                                    <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#3b82f6_0%,#0ea5e9_50%,#3b82f6_100%)]" />
                                     <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950 px-8 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900 gap-2">
                                         <IconPlus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
                                         Start New Conversation
@@ -307,7 +307,7 @@ export default function DashboardPage() {
                                         className={cn(
                                             "max-w-[95%] md:max-w-[75%] rounded-2xl px-4 py-3 md:px-5 md:py-3.5 text-sm md:text-base leading-relaxed shadow-sm",
                                             msg.role === "user"
-                                                ? "bg-emerald-600 text-white rounded-br-none"
+                                                ? "bg-primary text-white rounded-br-none"
                                                 : "bg-neutral-800 text-neutral-200 rounded-bl-none border border-neutral-700"
                                         )}
                                     >

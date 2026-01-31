@@ -118,7 +118,7 @@ export default function SignupPage() {
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-linear-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 cursor-pointer text-white font-medium"
+                            className="w-full bg-primary hover:bg-primary/90 cursor-pointer text-white font-medium"
                         >
                             {isLoading ? (
                                 <>
@@ -133,7 +133,7 @@ export default function SignupPage() {
 
                     <div className="text-center text-sm">
                         <span className="text-muted-foreground">Already have an account? </span>
-                        <Link href="/login" className="text-emerald-600 hover:text-emerald-500 font-medium hover:underline">
+                        <Link href="/login" className="text-primary hover:text-primary/80 font-medium hover:underline">
                             Sign in
                         </Link>
                     </div>
