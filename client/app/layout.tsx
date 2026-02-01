@@ -3,11 +3,13 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { ChatRoomProvider } from "@/context/ChatRoomContext";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
+
 
 export const metadata: Metadata = {
   title: "ReportLens AI - AI-Powered Lab Report Analysis",
@@ -25,8 +27,10 @@ export default function RootLayout({
         className={`${inter.variable} font-sans antialiased`}
       >
         <ThemeProvider>
-          {children}
+          <ChatRoomProvider>
+            {children}
           <Toaster position="top-right" reverseOrder={false} />
+          </ChatRoomProvider>
         </ThemeProvider>
       </body>
     </html>

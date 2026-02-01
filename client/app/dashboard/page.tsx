@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect , useContext } from "react"
+import { ThemeContext , ThemeContextType } from "@/context/ThemeContext";
 import { FileUpload } from "@/components/ui/file-upload"
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input"
 import { cn } from "@/lib/utils";
@@ -9,22 +10,27 @@ import { toast } from "react-hot-toast";
 import { IconPlus, IconMessage, IconMenu2, IconX } from "@tabler/icons-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
-import ReactMarkdown from 'react-markdown';
 import { isAxiosError } from "axios";
+import MessagesLayout from "@/components/MessagesLayout";
+import SidebarContent from "@/components/Sidebar";
+import { ChatRoomContext } from "@/context/ChatRoomContext";
 
-interface Message {
+export interface Message {
     id: string
     role: "user" | "ai"
     content: string
     timestamp: number
 }
 
-interface ChatRoom {
+
+export interface ChatRoom {
     id: string,
     createdAt: Date
 }
 
 export default function DashboardPage() {
+    const { theme , toggleTheme } = useContext(ThemeContext);
+    const { chatId , setRoomId } = useContext(ChatRoomContext);
     const router = useRouter();
     const [messages, setMessages] = useState<Message[]>([]);
     const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
@@ -34,7 +40,6 @@ export default function DashboardPage() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [messageLoader, setMessageLoader] = useState<boolean>(false);
-    const [chatId, setChatId] = useState<string>("");
     async function callChatIds(): Promise<void> {
         try {
             const res: { data: ChatRoom[] } = await api.get(
@@ -44,9 +49,9 @@ export default function DashboardPage() {
 
             const chatData: ChatRoom[] = res.data;
             setChatRooms(chatData);
+            setRoomId(chatData[0].id);
 
             if (chatData.length > 0) {
-                setChatId(chatData[0].id);
                 setShowDashboard(true);
             }
         } catch (err) {
@@ -163,75 +168,11 @@ export default function DashboardPage() {
         "What lifestyle changes should I consider?",
     ];
 
-    const SidebarContent = () => (
-        <>
-            <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center font-bold text-sm text-white">RL</div>
-                <h1 className="text-xl font-bold tracking-tight text-white">ReportLens</h1>
-            </div>
-
-            <div className="flex flex-col gap-2">
-                <button
-                    className="flex items-center gap-2 w-full p-3 rounded-lg bg-primary hover:bg-primary/90 text-white transition-all font-medium text-sm"
-                    onClick={handleCreateChat}
-                >
-                    <IconPlus className="w-4 h-4" />
-                    New Conversation
-                </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
-                <h2 className="text-xs font-semibold text-neutral-400 mb-2 uppercase tracking-wider">Recent Chats</h2>
-                {chatRooms.length === 0 && <p className="text-xs text-neutral-600">No history yet.</p>}
-                {chatRooms.map((chat: ChatRoom) => (
-                    <div
-                        key={chat.id}
-                        onClick={async (e: React.MouseEvent<HTMLDivElement>) => {
-                            e.preventDefault();
-                            try {
-                                const resp: { data: Message[] } = await api.get(`/api/chat/messages/${chat.id}`);
-                                setMessages([...resp.data]);
-                            } catch (e: unknown) {
-                                console.log(e)
-                            }
-                        }}
-                        className={cn(
-                            "flex items-center gap-3 p-3 rounded-lg transition-colors cursor-pointer text-sm truncate",
-                            "text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200"
-                        )}
-                    >
-                        <IconMessage className="w-4 h-4 shrink-0" />
-                        <span className="truncate">
-                            {new Date(chat.createdAt).toLocaleString()}
-                        </span>
-                    </div>
-                ))}
-            </div>
-
-            <div className="pt-4 border-t border-neutral-800">
-                <h2 className="text-xs font-semibold text-neutral-400 mb-4 uppercase tracking-wider">Upload Reports</h2>
-                <div className="w-full border border-dashed border-neutral-800 rounded-lg bg-neutral-900/50 min-h-[100px] flex flex-col items-center justify-center p-2 mb-4">
-                    <FileUpload onChange={handleFileUpload} />
-                </div>
-            </div>
-
-            <div className="pt-2 border-t border-neutral-800">
-                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-neutral-800/50 transition-colors cursor-pointer">
-                    <div className="h-8 w-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs">U</div>
-                    <div className="text-sm">
-                        <p className="font-medium text-neutral-200">User Account</p>
-                        <p className="text-xs text-neutral-500">View Profile</p>
-                    </div>
-                </div>
-            </div>
-        </>
-    );
-
     return (
         <div className="flex min-h-screen bg-neutral-900 text-white font-sans overflow-hidden">
 
             <div className="w-80 border-r border-neutral-800 bg-black/20 p-6 flex-col gap-6 hidden md:flex">
-                <SidebarContent />
+                <SidebarContent handleCreateChat={handleCreateChat} chatRooms={chatRooms} setMessages={setMessages} handleFileUpload={handleFileUpload}/>
             </div>
 
 
@@ -248,7 +189,7 @@ export default function DashboardPage() {
                         >
                             <IconX className="w-6 h-6" />
                         </button>
-                        <SidebarContent />
+                        <SidebarContent handleCreateChat={handleCreateChat} chatRooms={chatRooms} setMessages={setMessages} handleFileUpload={handleFileUpload}/>
                     </div>
                 </div>
             )}
@@ -295,26 +236,7 @@ export default function DashboardPage() {
                         </div>
                     ) : (
                         <>
-                            {messages.length !== 0 && messages.map((msg: Message) => (
-                                <div
-                                    key={msg.id}
-                                    className={cn(
-                                        "flex w-full mb-4",
-                                        msg.role === "user" ? "justify-end" : "justify-start"
-                                    )}
-                                >
-                                    <div
-                                        className={cn(
-                                            "max-w-[95%] md:max-w-[75%] rounded-2xl px-4 py-3 md:px-5 md:py-3.5 text-sm md:text-base leading-relaxed shadow-sm",
-                                            msg.role === "user"
-                                                ? "bg-primary text-white rounded-br-none"
-                                                : "bg-neutral-800 text-neutral-200 rounded-bl-none border border-neutral-700"
-                                        )}
-                                    >
-                                        <ReactMarkdown>{msg.content}</ReactMarkdown>
-                                    </div>
-                                </div>
-                            ))}
+                            {messages.length !== 0 && <MessagesLayout messages={messages} />}
                             {loading && (
                                 <div className="flex justify-start w-full mb-4">
                                     <div className="flex flex-col space-y-2 p-4 bg-neutral-800/50 rounded-2xl rounded-bl-none border border-neutral-700/50 max-w-[75%]">

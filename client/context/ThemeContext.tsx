@@ -1,7 +1,7 @@
 "use client"
 import { createContext, useState, useEffect } from "react";
 
-interface ThemeContextType {
+export interface ThemeContextType {
     theme: "light" | "dark";
     toggleTheme: () => void;
 }
