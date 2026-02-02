@@ -5,7 +5,7 @@ const path = require("path");
 
 const generativeAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = generativeAI.getGenerativeModel({
-  model: "gemini-2.0-flash-exp",
+  model: "gemini-pro",
 });
 
 const fileUpload = async (req, res) => {
@@ -68,7 +68,7 @@ const getMessages = async (req, res) => {
         chatId: roomId,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "asc",
       },
     });
     return res.status(200).json(messages);
@@ -145,13 +145,13 @@ const userQuery = async (req, res) => {
         error: "No such ChatRoom exists",
       });
     }
-    await prisma.chat.create({
+    await prisma.message.create({
       data: {
-        messages: {
-          create: {
-            content: query,
-            role: "User",
-            chatId: chatId,
+        content: query,
+        role: "User",
+        chat: {
+          connect: {
+            id: chatId,
           },
         },
       },
@@ -162,28 +162,41 @@ const userQuery = async (req, res) => {
       "utf-8",
     );
     const content = data.replace("{{user_question}}", query.trim());
-    const response = await model.generateContent(content);
-    const resp = response.response.text();
-    await prisma.chat.create({
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: content,
+              },
+            ],
+          },
+        ],
+      }),
+    })
+    const resp = await response.json();
+
+    const aiText =
+      resp?.candidates?.[0]?.content?.parts?.[0]?.text ??
+      "Sorry, I could not generate a response.";
+
+    const aiResponse = await prisma.message.create({
       data: {
-        messages: {
-          create: {
-            content: resp,
-            role: "AI",
-            chatId: chatId,
+        content: aiText,
+        role: "AI",
+        chat: {
+          connect: {
+            id: chatId,
           },
         },
-      },
+      }
     });
-    const messages = await prisma.chat.findUnique({
-      where: {
-        id: chatId,
-      },
-      include: {
-        messages: true,
-      },
-    });
-    return res.status(200).json(messages);
+    return res.status(200).json(aiResponse);
   } catch (err) {
     console.log(err);
     return res.status(500).json({

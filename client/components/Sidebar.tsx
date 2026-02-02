@@ -1,6 +1,6 @@
 "use client";
 
-import { ChatRoom, Message } from "@/app/dashboard/page";
+import { ChatRoom, Message } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import { IconMessage, IconPlus } from "@tabler/icons-react";
 import { FileUpload } from "./ui/file-upload";

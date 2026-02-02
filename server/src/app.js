@@ -26,6 +26,20 @@ app.use("/api/auth", authRouter);
 app.use("/api/chat", authMiddleware, chatRouter);
 app.use("/api/dashboard", authMiddleware, dashboardRouter);
 
+app.get('/me' , authMiddleware , async (req , res) => {
+  try{
+    const user = req.user;
+    return res.status(200).json({
+      "user" : { id : user.id , name : user.name , email : user.email }
+    })
+  }catch(err){
+    console.log(err);
+    return res.status(500).json({
+      "error" : "Internal Server Error"
+    })
+  }
+})
+
 async function main() {
   await prisma.$connect();
   console.log("Database connected");

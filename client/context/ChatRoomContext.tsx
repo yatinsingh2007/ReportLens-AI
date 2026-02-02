@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect } from "react"
-import { ChatRoom } from "@/app/dashboard/page"
+import { ChatRoom } from "@/components/DashboardPage"
 
 import { createContext } from "react";
 
