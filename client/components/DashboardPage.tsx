@@ -1,18 +1,20 @@
 "use client"
 
 import React, { useState, useRef, useEffect, useContext } from "react"
-import { ThemeContext } from "@/context/ThemeContext";
+import Link from "next/link"
+import { ThemeContext } from "@/context/ThemeContext"
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input"
-import { api } from "@/lib/axios";
-import { toast } from "react-hot-toast";
-import { IconPlus, IconMenu2, IconX } from "@tabler/icons-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useRouter } from "next/navigation";
-import { isAxiosError } from "axios";
-import MessagesLayout, { Message as LayoutMessage } from "@/components/MessagesLayout"; // Import types if possible, or redefine compatible types below
-import SidebarContent from "@/components/Sidebar";
-import { ChatRoomContext } from "@/context/ChatRoomContext";
-import { AuthContext } from "@/context/AuthContext";
+import { api } from "@/lib/axios"
+import { toast } from "react-hot-toast"
+import { IconPlus, IconMenu2, IconX, IconUser } from "@tabler/icons-react"
+import { Sun, Moon } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { isAxiosError } from "axios"
+import MessagesLayout from "@/components/MessagesLayout"
+import SidebarContent from "@/components/Sidebar"
+import { ChatRoomContext } from "@/context/ChatRoomContext"
+import { AuthContext } from "@/context/AuthContext"
+import { AiThinkingSkeleton } from "@/components/AiThinkingSkeleton"
 
 export interface Message {
     id: string
@@ -27,10 +29,10 @@ export interface ChatRoom {
 }
 
 export default function DashboardPage() {
-
-    const { theme, toggleTheme } = useContext(ThemeContext); 
-    const { isAuthenticated } = useContext(AuthContext);
-    const { chatId, setRoomId } = useContext(ChatRoomContext);
+    const { theme, toggleTheme } = useContext(ThemeContext)
+    const { isAuthenticated } = useContext(AuthContext)
+    const { chatId, setRoomId } = useContext(ChatRoomContext)
+    const isDark = theme === "dark"
     
     const router = useRouter();
 
@@ -141,8 +143,8 @@ export default function DashboardPage() {
                 query: newMsg,
                 chatId: chatId
             }, { withCredentials: true });
-
-            setMessages(resp.data);
+            const data = resp.data;
+            setMessages(Array.isArray(data) ? data : (data?.messages ? data.messages : []));
         } catch (err) {
             toast.error("Failed to send message");
             console.error(err);
@@ -174,18 +176,25 @@ export default function DashboardPage() {
     ];
 
     return (
-        <div className="flex min-h-screen bg-neutral-900 text-white font-sans overflow-hidden">
-            
-
-            <div className="w-80 border-r border-neutral-800 bg-black/20 p-6 flex-col gap-6 hidden md:flex">
-                <SidebarContent 
-                    handleCreateChat={handleCreateChat} 
-                    chatRooms={chatRooms} 
-                    setMessages={setMessages} 
+        <div
+            className={`flex min-h-screen font-sans overflow-hidden transition-colors duration-300 ${
+                isDark ? "bg-zinc-950 text-zinc-100" : "bg-slate-50 text-slate-900"
+            }`}
+        >
+            <aside
+                className={`hidden md:flex w-72 flex-col border-r p-5 transition-colors ${
+                    isDark ? "border-zinc-800 bg-zinc-900/50" : "border-slate-200 bg-white"
+                }`}
+            >
+                <SidebarContent
+                    handleCreateChat={handleCreateChat}
+                    chatRooms={chatRooms}
+                    setMessages={setMessages}
                     handleFileUpload={handleFileUpload}
+                    isDark={isDark}
+                    toggleTheme={toggleTheme}
                 />
-            </div>
-
+            </aside>
 
             {isMobileMenuOpen && (
                 <div className="fixed inset-0 z-50 md:hidden">
@@ -193,108 +202,139 @@ export default function DashboardPage() {
                         className="fixed inset-0 bg-black/50 backdrop-blur-sm"
                         onClick={() => setIsMobileMenuOpen(false)}
                     />
-                    <div className="fixed inset-y-0 left-0 w-[80%] max-w-sm bg-neutral-900 border-r border-neutral-800 p-6 flex flex-col gap-6 shadow-2xl animate-in slide-in-from-left duration-200">
+                    <aside
+                        className={`fixed inset-y-0 left-0 w-[85%] max-w-sm flex flex-col gap-6 p-6 shadow-2xl animate-in slide-in-from-left duration-200 border-r ${
+                            isDark ? "bg-zinc-900 border-zinc-800" : "bg-white border-slate-200"
+                        }`}
+                    >
                         <button
                             onClick={() => setIsMobileMenuOpen(false)}
-                            className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-white"
+                            className={`absolute top-4 right-4 p-2 rounded-lg transition-colors ${isDark ? "text-zinc-400 hover:bg-zinc-800 hover:text-white" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"}`}
                         >
                             <IconX className="w-6 h-6" />
                         </button>
-                        <SidebarContent 
-                            handleCreateChat={handleCreateChat} 
-                            chatRooms={chatRooms} 
-                            setMessages={setMessages} 
+                        <SidebarContent
+                            handleCreateChat={handleCreateChat}
+                            chatRooms={chatRooms}
+                            setMessages={setMessages}
                             handleFileUpload={handleFileUpload}
+                            isDark={isDark}
+                            toggleTheme={toggleTheme}
                         />
-                    </div>
+                    </aside>
                 </div>
             )}
 
-
-            <div className="flex-1 flex flex-col relative bg-neutral-950 h-screen">
-
-
-                <div className="md:hidden flex items-center justify-between p-4 border-b border-neutral-800">
-                    <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-neutral-400 hover:text-white">
+            <div
+                className={`flex-1 flex flex-col min-h-screen transition-colors ${isDark ? "bg-zinc-950" : "bg-slate-50"}`}
+            >
+                <header
+                    className={`md:hidden flex items-center justify-between px-4 py-3 border-b shrink-0 ${
+                        isDark ? "border-zinc-800 bg-zinc-900/80" : "border-slate-200 bg-white"
+                    }`}
+                >
+                    <button
+                        onClick={() => setIsMobileMenuOpen(true)}
+                        className={`p-2 rounded-lg transition-colors ${isDark ? "text-zinc-400 hover:bg-zinc-800" : "text-slate-600 hover:bg-slate-100"}`}
+                    >
                         <IconMenu2 className="w-6 h-6" />
                     </button>
-                    <span className="font-bold text-white">ReportLens</span>
-                    <div className="w-8" />
-                </div>
+                    <span className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>ReportLens AI</span>
+                    <div className="flex items-center gap-1">
+                        <button
+                            type="button"
+                            onClick={toggleTheme}
+                            className={`p-2 rounded-lg transition-colors ${isDark ? "text-amber-400 hover:bg-zinc-800" : "text-slate-600 hover:bg-slate-100"}`}
+                            aria-label="Toggle theme"
+                        >
+                            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                        </button>
+                        <Link
+                            href="/profile"
+                            className={`p-2 rounded-lg transition-colors ${isDark ? "text-zinc-400 hover:bg-zinc-800" : "text-slate-600 hover:bg-slate-100"}`}
+                            aria-label="Profile"
+                        >
+                            <IconUser className="w-6 h-6" />
+                        </Link>
+                    </div>
+                </header>
 
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
-
                     {!showDashboard || (messages.length === 0 && !isGenerating) ? (
-                        <div className="flex flex-col items-center justify-center h-full text-center space-y-6 relative overflow-hidden">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] -z-50 animate-pulse opacity-50" />
-                            
-                            <div className="relative z-10 flex flex-col items-center backdrop-blur-md bg-neutral-900/40 p-8 rounded-2xl border border-neutral-800/50 shadow-2xl max-w-lg w-full">
-                                <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center font-bold text-3xl text-white mb-6 shadow-lg shadow-primary/20">
+                        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                            <div
+                                className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[100px] -z-10 opacity-40 ${
+                                    isDark ? "bg-teal-500/20" : "bg-teal-200/60"
+                                }`}
+                            />
+                            <div
+                                className={`relative z-10 w-full max-w-md rounded-2xl border p-8 shadow-xl transition-colors ${
+                                    isDark ? "bg-zinc-900/80 border-zinc-700" : "bg-white border-slate-200"
+                                }`}
+                            >
+                                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 font-bold text-2xl text-white shadow-lg shadow-teal-500/25">
                                     RL
                                 </div>
-                                <h2 className="text-3xl font-bold text-white tracking-tight mb-3">Welcome to ReportLens</h2>
-                                <p className="text-neutral-400 text-lg leading-relaxed mb-8">
-                                    Upload medical reports or ask health-related questions.
+                                <h2 className={`text-2xl font-bold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>
+                                    Welcome to ReportLens
+                                </h2>
+                                <p className={`text-base leading-relaxed mb-8 ${isDark ? "text-zinc-400" : "text-slate-600"}`}>
+                                    Upload medical reports or ask health-related questions. Start a new conversation to begin.
                                 </p>
-
                                 <button
                                     onClick={handleCreateChat}
-                                    className="group relative inline-flex h-12 overflow-hidden rounded-full p-px w-full max-w-xs hover:shadow-primary/20 hover:shadow-lg transition-all"
+                                    className="inline-flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-6 font-semibold text-white shadow-lg shadow-teal-500/25 transition-all hover:from-teal-600 hover:to-cyan-600 hover:shadow-teal-500/30 active:scale-[0.98]"
                                 >
-                                    <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#3b82f6_0%,#0ea5e9_50%,#3b82f6_100%)]" />
-                                    <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950 px-8 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900 gap-2">
-                                        <IconPlus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-                                        Start New Conversation
-                                    </span>
+                                    <IconPlus className="w-5 h-5" />
+                                    Start New Conversation
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="max-w-3xl mx-auto w-full">
-                            <MessagesLayout messages={messages} />
-                            
+                        <div className="max-w-3xl mx-auto w-full space-y-4">
+                            <MessagesLayout messages={messages} isDark={isDark} />
                             {isGenerating && (
-                                <div className="flex justify-start w-full mb-4 pt-4 animate-in fade-in slide-in-from-bottom-2">
-                                    <div className="flex flex-col space-y-3 p-4 bg-neutral-900/50 rounded-2xl rounded-tl-none border border-neutral-800 w-full max-w-[75%]">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="h-2 w-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0s' }} />
-                                            <div className="h-2 w-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0.15s' }} />
-                                            <div className="h-2 w-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0.3s' }} />
-                                        </div>
-                                        <Skeleton className="h-4 w-[90%] bg-neutral-800" />
-                                        <Skeleton className="h-4 w-[60%] bg-neutral-800" />
-                                    </div>
+                                <div className="pt-2 pb-4">
+                                    <AiThinkingSkeleton isDark={isDark} />
                                 </div>
                             )}
                         </div>
                     )}
                 </div>
 
-
-                <div className="p-4 md:p-6 pb-6 w-full max-w-4xl mx-auto z-10 flex items-center gap-3">
-                    <button
-                        onClick={triggerFileInput}
-                        className="p-3.5 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white transition-all border border-neutral-700 hover:border-neutral-600 md:hidden shadow-lg"
-                        aria-label="Upload file"
-                    >
-                        <IconPlus className="w-5 h-5" />
-                    </button>
-                    
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        onChange={handleFileSelect}
-                        accept=".pdf,.png,.jpg,.jpeg"
-                    />
-                    
-                    <div className="flex-1">
-                        <PlaceholdersAndVanishInput
-                            placeholders={placeholders}
-                            onChange={handleInputChange}
-                            onSubmit={handleSubmit}
+                <div
+                    className={`shrink-0 p-4 md:p-6 border-t ${
+                        isDark ? "border-zinc-800 bg-zinc-950" : "border-slate-200 bg-white"
+                    }`}
+                >
+                    <div className="mx-auto flex w-full max-w-3xl items-center gap-3">
+                        <button
+                            onClick={triggerFileInput}
+                            className={`shrink-0 p-3 rounded-xl border transition-all md:hidden ${
+                                isDark
+                                    ? "bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700"
+                                    : "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200"
+                            }`}
+                            aria-label="Upload file"
+                        >
+                            <IconPlus className="w-5 h-5" />
+                        </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            onChange={handleFileSelect}
+                            accept=".pdf,.png,.jpg,.jpeg"
                         />
+                        <div className="flex-1 min-w-0">
+                            <PlaceholdersAndVanishInput
+                                placeholders={placeholders}
+                                onChange={handleInputChange}
+                                onSubmit={handleSubmit}
+                                isDark={isDark}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

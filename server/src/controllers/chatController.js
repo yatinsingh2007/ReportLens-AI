@@ -11,7 +11,6 @@ const model = generativeAI.getGenerativeModel({
 const fileUpload = async (req, res) => {
   try {
     console.log(req.file);
-    // Implement file processing logic if needed
     return res.status(200).json({ message: "File uploaded successfully" });
   } catch (err) {
     console.log(err);
@@ -159,33 +158,36 @@ const userQuery = async (req, res) => {
 
     const data = await fs.promises.readFile(
       path.join(__dirname, "..", "prompts", "queryPrompt.txt"),
-      "utf-8",
+      "utf-8"
     );
     const content = data.replace("{{user_question}}", query.trim());
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: content,
-              },
-            ],
-          },
-        ],
-      }),
-    })
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: content,
+                },
+              ],
+            },
+          ],
+        }),
+      }
+    );
     const resp = await response.json();
 
     const aiText =
       resp?.candidates?.[0]?.content?.parts?.[0]?.text ??
       "Sorry, I could not generate a response.";
 
-    const aiResponse = await prisma.message.create({
+    await prisma.message.create({
       data: {
         content: aiText,
         role: "AI",
@@ -194,9 +196,14 @@ const userQuery = async (req, res) => {
             id: chatId,
           },
         },
-      }
+      },
     });
-    return res.status(200).json(aiResponse);
+
+    const messages = await prisma.message.findMany({
+      where: { chatId },
+      orderBy: { createdAt: "asc" },
+    });
+    return res.status(200).json(messages);
   } catch (err) {
     console.log(err);
     return res.status(500).json({

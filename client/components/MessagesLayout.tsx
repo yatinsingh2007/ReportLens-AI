@@ -15,18 +15,20 @@ export interface Message {
 
 interface MessagesLayoutProps {
   messages: Message[];
+  isDark?: boolean;
 }
 
-export default function MessagesLayout({ messages }: MessagesLayoutProps) {
+export default function MessagesLayout({ messages, isDark = true }: MessagesLayoutProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const list = Array.isArray(messages) ? messages : [];
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [list]);
 
   return (
     <div className="flex flex-col space-y-6 pb-8 px-4 md:px-0 max-w-3xl mx-auto">
-      {messages.map((message, index) => {
+      {list.map((message, index) => {
         const role = message.role.toLowerCase();
         const isUser = role === "user";
 
@@ -41,9 +43,11 @@ export default function MessagesLayout({ messages }: MessagesLayoutProps) {
             <div
               className={cn(
                 "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border shadow-sm",
-                isUser 
-                  ? "bg-blue-100 border-blue-200 text-blue-600" 
-                  : "bg-neutral-100 border-neutral-200 text-neutral-600"
+                isUser
+                  ? "bg-teal-100 border-teal-200 text-teal-600 dark:bg-teal-900/50 dark:border-teal-700 dark:text-teal-400"
+                  : isDark
+                    ? "bg-zinc-700 border-zinc-600 text-teal-400"
+                    : "bg-slate-100 border-slate-200 text-teal-600"
               )}
             >
               {isUser ? <User size={16} /> : <Bot size={16} />}
@@ -53,8 +57,10 @@ export default function MessagesLayout({ messages }: MessagesLayoutProps) {
               className={cn(
                 "relative max-w-[85%] px-5 py-3.5 text-sm md:text-base shadow-sm rounded-2xl",
                 isUser
-                  ? "bg-primary text-primary-foreground rounded-tr-none"
-                  : "bg-muted text-foreground rounded-tl-none border border-border"
+                  ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-tr-none"
+                  : isDark
+                    ? "bg-zinc-800/80 text-zinc-100 rounded-tl-none border border-zinc-700"
+                    : "bg-white text-slate-900 rounded-tl-none border border-slate-200"
               )}
             >
               <ReactMarkdown 
