@@ -23,6 +23,7 @@ model Message {
   content   String
   role      Role
   chatId    String
+  filePresent Boolean @default(false)
   chat      Chat     @relation(fields: [chatId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

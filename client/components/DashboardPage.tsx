@@ -18,9 +18,10 @@ import { AiThinkingSkeleton } from "@/components/AiThinkingSkeleton"
 
 export interface Message {
     id: string
-    role: "user" | "ai" 
+    role: "user" | "ai"
     content: string
-    timestamp: number
+    timestamp?: number
+    filePresent?: boolean
 }
 
 export interface ChatRoom {
@@ -99,18 +100,37 @@ export default function DashboardPage() {
 
     const handleFileUpload = async (files: File[]) => {
         if (!chatId) return toast.error("Please select a chat first");
-        
+
+        const file = files[0];
+        const optimisticFileMessage: Message = {
+            id: `file-opt-${Date.now()}`,
+            role: "user",
+            content: file.name,
+            filePresent: true,
+        };
+        setMessages((prev) => [...prev, optimisticFileMessage]);
+
         try {
             const formData = new FormData();
-            formData.append("file", files[0]);
-            formData.append("chatId", chatId); 
+            formData.append("file", file);
+            formData.append("chatId", chatId);
             const resp = await api.post("/api/chat/fileUpload", formData);
-            
+
+            const data = resp.data;
+            if (data?.id && data?.content !== undefined) {
+                setMessages((prev) =>
+                    prev.map((m) =>
+                        m.id === optimisticFileMessage.id
+                            ? { id: data.id, role: "user" as const, content: data.content, filePresent: !!data.filePresent }
+                            : m
+                    )
+                );
+            }
             toast.success("File uploaded successfully");
-            setMessages((prev) => [...prev, resp.data]);
         } catch (err) {
             console.error(err);
             toast.error("Failed to upload file");
+            setMessages((prev) => prev.filter((m) => m.id !== optimisticFileMessage.id));
         }
     }
 
@@ -131,22 +151,28 @@ export default function DashboardPage() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!inputValue.trim()) return;
-        
-        
-        try {
-            setIsGenerating(true); 
-            const newMsg = inputValue.trim();
-            
-            setInputValue(""); 
 
+        const newMsg = inputValue.trim();
+        setInputValue("");
+
+        const optimisticUserMessage: Message = {
+            id: `opt-${Date.now()}`,
+            role: "user",
+            content: newMsg,
+        };
+        setMessages((prev) => [...prev, optimisticUserMessage]);
+        setIsGenerating(true);
+
+        try {
             const resp = await api.post("/api/chat/userQuery", {
                 query: newMsg,
-                chatId: chatId
+                chatId: chatId,
             }, { withCredentials: true });
             const data = resp.data;
-            setMessages(Array.isArray(data) ? data : (data?.messages ? data.messages : []));
+            setMessages(Array.isArray(data) ? data : data?.messages ? data.messages : []);
         } catch (err) {
             toast.error("Failed to send message");
+            setMessages((prev) => prev.filter((m) => m.id !== optimisticUserMessage.id));
             console.error(err);
         } finally {
             setIsGenerating(false);

@@ -10,8 +10,34 @@ const model = generativeAI.getGenerativeModel({
 
 const fileUpload = async (req, res) => {
   try {
-    console.log(req.file);
-    return res.status(200).json({ message: "File uploaded successfully" });
+    const { chatId } = req.body;
+    const file = req.file;
+    if (!chatId || !file) {
+      return res.status(400).json({
+        error: "chatId and file are required",
+      });
+    }
+    const chatRoom = await prisma.chat.findUnique({
+      where: { id: chatId },
+    });
+    if (!chatRoom) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+    const filename = file.originalname || "uploaded-file";
+    const message = await prisma.message.create({
+      data: {
+        content: filename,
+        role: "User",
+        chatId,
+        filePresent: true,
+      },
+    });
+    return res.status(200).json({
+      id: message.id,
+      content: message.content,
+      role: message.role,
+      filePresent: message.filePresent,
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({

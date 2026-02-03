@@ -123,6 +123,19 @@ html {
 .animate-thinking-dot {
   animation: thinking-dot 1.4s ease-in-out infinite;
 }
+
+@keyframes gemini-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-gemini-pulse {
+  animation: gemini-pulse 1.5s ease-in-out infinite;
+}
 .animate-fade-in-up {
   animation: fade-in-up 0.6s ease-out;
 }
