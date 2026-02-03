@@ -2,6 +2,8 @@ const { prisma } = require("../db/dbConfig");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs");
 const path = require("path");
+const multer = require("multer");
+const Tesseract = require("tesseract.js");
 
 const generativeAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = generativeAI.getGenerativeModel({
@@ -17,6 +19,13 @@ const fileUpload = async (req, res) => {
         error: "chatId and file are required",
       });
     }
+    async function extractText() {
+      const data = await Tesseract.recognize(file.path, "eng", {
+        logger: (m) => console.log(m),
+      });
+      return data.text;
+    }
+    const text = await extractText();
     const chatRoom = await prisma.chat.findUnique({
       where: { id: chatId },
     });
@@ -32,11 +41,48 @@ const fileUpload = async (req, res) => {
         filePresent: true,
       },
     });
+    const data = await fs.promises.readFile(
+      path.join(__dirname, "..", "prompts", "fileupload.txt"),
+      "utf-8"
+    );
+    const content = data.replace("{{OCR_TEXT}}", text.trim());
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: content,
+                },
+              ],
+            },
+          ],
+        }),
+      }
+    );
+    const resp = await response.json();
+    const aiText =
+      resp?.candidates?.[0]?.content?.parts?.[0]?.text ??
+      "Sorry, I could not generate a response.";
+    const aiMessage = await prisma.message.create({
+      data: {
+        content: aiText,
+        role: "AI",
+        chatId,
+        filePresent: true,
+      },
+    });
     return res.status(200).json({
-      id: message.id,
-      content: message.content,
-      role: message.role,
-      filePresent: message.filePresent,
+      id: aiMessage.id,
+      content: aiMessage.content,
+      role: aiMessage.role,
+      filePresent: aiMessage.filePresent,
     });
   } catch (err) {
     console.log(err);
