@@ -5,7 +5,6 @@ import { ChatRoom, Message } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import { IconMessage, IconPlus, IconUser } from "@tabler/icons-react";
 import { Sun, Moon } from "lucide-react";
-import { FileUpload } from "./ui/file-upload";
 import { api } from "@/lib/axios";
 import { ChatRoomContext } from "@/context/ChatRoomContext";
 import { useContext } from "react";
@@ -44,7 +43,7 @@ const SidebarContent = ({
 
   return (
     <>
-
+    <div>
       <div className="flex items-center gap-2 mb-6">
         <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center font-bold text-sm text-white shadow-md">
           RL
@@ -64,7 +63,7 @@ const SidebarContent = ({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-2 space-y-2 min-h-0 mt-6">
+      <div className="overflow-y-auto pr-2 space-y-2 min-h-0 mt-6">
         <h2 className={`text-xs font-semibold mb-2 uppercase tracking-wider ${isDark ? "text-zinc-400" : "text-slate-500"}`}>
           Recent Chats
         </h2>
@@ -92,24 +91,6 @@ const SidebarContent = ({
           </button>
         ))}
       </div>
-
-      <div className={`pt-4 border-t mt-4 ${isDark ? "border-zinc-800" : "border-slate-200"}`}>
-        <h2 className={`text-xs font-semibold mb-3 uppercase tracking-wider ${isDark ? "text-zinc-400" : "text-slate-500"}`}>
-          Upload Reports
-        </h2>
-        <div
-          className={cn(
-            "w-full border border-dashed rounded-xl min-h-[100px] flex flex-col items-center justify-center p-3",
-            isDark ? "border-zinc-700 bg-zinc-800/30" : "border-slate-300 bg-slate-50"
-          )}
-        >
-          <FileUpload
-            onChange={(files) => {
-              if (!chatId) return;
-              handleFileUpload(files);
-            }}
-          />
-        </div>
       </div>
 
       <div className={`pt-4 border-t mt-4 space-y-2 ${isDark ? "border-zinc-800" : "border-slate-200"}`}>

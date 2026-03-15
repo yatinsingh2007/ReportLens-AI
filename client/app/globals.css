@@ -158,20 +158,31 @@ html {
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
 }
 
-/* Custom Scrollbar */
+/* Grey Scrollbar - works perfectly with your light/dark theme */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--background));
+  background: white;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.3);
-  border-radius: 5px;
+  background: #9ca3af;           /* nice neutral grey */
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.5);
+/* Dark mode scrollbar */
+.dark::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.dark::-webkit-scrollbar-track {
+  background: black;
+  border-radius: 10px;
+}
+.dark::-webkit-scrollbar-thumb {
+  background: white;
+  border-radius: 10px;
 }

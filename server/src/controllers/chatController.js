@@ -2,7 +2,6 @@ const { prisma } = require("../db/dbConfig");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs");
 const path = require("path");
-const multer = require("multer");
 const Tesseract = require("tesseract.js");
 
 const generativeAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -12,7 +11,7 @@ const model = generativeAI.getGenerativeModel({
 
 const fileUpload = async (req, res) => {
   try {
-    const { chatId } = req.body;
+    const { chatId, query } = req.body;
     const file = req.file;
     if (!chatId || !file) {
       return res.status(400).json({
@@ -20,12 +19,20 @@ const fileUpload = async (req, res) => {
       });
     }
     async function extractText() {
-      const data = await Tesseract.recognize(file.path, "eng", {
-        logger: (m) => console.log(m),
-      });
-      return data.text;
+      try {
+        console.log(`Starting OCR for file: ${file.originalname}`);
+        const result = await Tesseract.recognize(file.buffer, "eng", {
+          logger: (m) => console.log(m.status, m.progress),
+        });
+        return result?.data?.text || "";
+      } catch (ocrError) {
+        console.error("Tesseract OCR Error:", ocrError);
+        return "";
+      }
     }
     const text = await extractText();
+    console.log("Extracted Text:", text);
+    const safeText = (typeof text === 'string' ? text : "").trim();
     const chatRoom = await prisma.chat.findUnique({
       where: { id: chatId },
     });
@@ -33,19 +40,25 @@ const fileUpload = async (req, res) => {
       return res.status(404).json({ error: "Chat not found" });
     }
     const filename = file.originalname || "uploaded-file";
+    const userContent = query ? `${filename}\n\nQuestion: ${query}` : filename;
     const message = await prisma.message.create({
       data: {
-        content: filename,
+        content: userContent,
         role: "User",
         chatId,
         filePresent: true,
       },
     });
+    
+    const promptFile = query ? "fileAndQueryPrompt.txt" : "fileupload.txt";
     const data = await fs.promises.readFile(
-      path.join(__dirname, "..", "prompts", "fileupload.txt"),
+      path.join(__dirname, "..", "prompts", promptFile),
       "utf-8"
     );
-    const content = data.replace("{{OCR_TEXT}}", text.trim());
+    let content = data.replace("{{OCR_TEXT}}", safeText);
+    if (query && typeof query === 'string') {
+      content = content.replace("{{user_question}}", query.trim());
+    }
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
@@ -85,9 +98,9 @@ const fileUpload = async (req, res) => {
       filePresent: aiMessage.filePresent,
     });
   } catch (err) {
-    console.log(err);
+    console.error("Error in fileUpload:", err);
     return res.status(500).json({
-      error: "Internal Server Error",
+      error: err.message || "Internal Server Error",
     });
   }
 };
