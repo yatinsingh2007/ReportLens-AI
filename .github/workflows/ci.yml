@@ -35,7 +35,7 @@ jobs:
         env:
           BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
         run: |
-          if curl -f http://localhost:$PORT/health; then
+          if curl -f http://localhost:$BACKEND_PORT/health; then
             echo "Server running"
           else
             echo "Server failed"
