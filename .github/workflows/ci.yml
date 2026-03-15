@@ -1,0 +1,51 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci-pipeline:
+    name: Build, Test, and Verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Build OCR Docker image
+        run: |
+          cd server
+          docker build -t reportlens-ocr:latest .
+
+      - name: Run OCR container
+        run: |
+          cd server
+          docker run -d -p 5000:5000 --name ocr-test-container reportlens-ocr:latest
+
+      - name: Wait for server to start
+        run: sleep 8
+
+      - name: Verify server health
+        run: |
+          if curl -f http://localhost:5000/health; then
+            echo "Server is responding correctly."
+          else
+            echo "Server health check failed."
+            docker logs ocr-test-container
+            exit 1
+          fi
+
+      - name: Cleanup container
+        if: always()
+        run: |
+          docker stop ocr-test-container || true
+          docker rm ocr-test-container || true
