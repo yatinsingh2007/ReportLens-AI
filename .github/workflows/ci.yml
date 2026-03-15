@@ -27,13 +27,14 @@ jobs:
       - name: Run OCR container
         run: |
           docker run -d \
-            -p 5000:5000 \
+            -p ${{ secrets.BACKEND_PORT }}:${{ secrets.BACKEND_PORT }} \
             -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
             -e GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
             -e GEMINI_URL="${{ secrets.GEMINI_URL }}" \
+            -e PORT="${{ secrets.BACKEND_PORT }}" \
+            -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
             --name ocr-test-container \
             reportlens-ocr:latest
-
       - name: Wait for server to start
         run: sleep 8
 
