@@ -247,7 +247,7 @@ const userQuery = async (req, res) => {
     );
     const content = data.replace("{{user_question}}", query.trim());
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `${process.env.GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: {
