@@ -22,7 +22,7 @@ jobs:
 
       - name: Build OCR Docker image
         run: |
-          docker build -t reportlens-ocr:latest .
+          docker build -t reportlens-ocr:latest ./server
 
       - name: Run OCR container
         run: |
