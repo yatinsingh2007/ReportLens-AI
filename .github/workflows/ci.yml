@@ -40,7 +40,7 @@ jobs:
 
       - name: Verify server health
         run: |
-          if curl -f http://localhost:5000/health; then
+          if curl -f http://localhost:${{ secrets.BACKEND_PORT }}/health; then
             echo "Server is responding correctly."
           else
             echo "Server health check failed."
