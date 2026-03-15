@@ -10,20 +10,11 @@ on:
 
 jobs:
   ci-pipeline:
-    name: Build, Test, and Verify
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup Node.js v20
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Show repository structure
-        run: ls -R
 
       - name: Build OCR Docker image
         run: docker build -t reportlens-ocr:latest ./server
@@ -34,29 +25,19 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_URL: ${{ secrets.GEMINI_URL }}
-        run: |
-          docker run -d 
-            -p $BACKEND_PORT:$BACKEND_PORT 
-            -e DATABASE_URL="$DATABASE_URL" 
-            -e GEMINI_API_KEY="$GEMINI_API_KEY" 
-            -e GEMINI_URL="$GEMINI_URL" 
-            --name ocr-test-container 
-            reportlens-ocr:latest
+        run: docker run -d -p $BACKEND_PORT:$BACKEND_PORT -e DATABASE_URL="$DATABASE_URL" -e GEMINI_API_KEY="$GEMINI_API_KEY" -e GEMINI_URL="$GEMINI_URL" --name ocr-test-container reportlens-ocr:latest
 
-      - name: Wait for server to start
+      - name: Wait for server startup
         run: sleep 8
-
-      - name: Show running containers
-        run: docker ps
 
       - name: Verify server health
         env:
           BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
         run: |
           if curl -f http://localhost:$BACKEND_PORT/health; then
-            echo "Server is responding correctly."
+            echo "Server running"
           else
-            echo "Server health check failed."
+            echo "Server failed"
             docker logs ocr-test-container
             exit 1
           fi
