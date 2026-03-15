@@ -15,7 +15,7 @@ Organizations and individuals often deal with exhaustive volumes of documentatio
 - **AI-Powered Analysis**: Generates comprehensive structured insights and summaries via the Google Gemini API.
 - **Robust Storage**: Securely stores generated insights using PostgreSQL and Prisma ORM for future reference.
 - **RESTful API Architecture**: Decoupled backend enabling flexible consumption across any frontend or third-party service.
-- **Production-Ready Deployment**: Containerized with Docker and fully automated CI/CD pipelines targeting Azure Virtual Machines.
+- **Production-Ready Deployment**: Containerized with Docker and fully automated CI/CD pipelines targeting Oracle Virtual Machines.
 
 ## 4. System Architecture
 
@@ -61,7 +61,7 @@ Organizations and individuals often deal with exhaustive volumes of documentatio
 - **OCR Engine**: Tesseract.js
 - **AI Integration**: Google Gemini API
 - **Database / ORM**: PostgreSQL, Prisma
-- **DevOps / Infrastructure**: Docker, GitHub Actions (CI/CD), Azure Virtual Machine
+- **DevOps / Infrastructure**: Docker, GitHub Actions (CI/CD), Oracle Virtual Machine
 
 ## 6. Project Structure
 ```text
@@ -173,10 +173,10 @@ Configured via GitHub Actions (`.github/workflows/ci.yml`), the Continuous Integ
 ## 12. CD Pipeline Explanation
 Triggered automatically upon the successful completion of the CI pipeline on the `main` branch.
 - **Build & Push**: Builds the production Docker image and pushes it to an established container registry (e.g., DockerHub or GitHub Container Registry).
-- **Deploy**: Connects to the Azure Virtual Machine over SSH, pulls the latest registry image, and smoothly restarts the backend container.
+- **Deploy**: Connects to the Oracle Virtual Machine over SSH, pulls the latest registry image, and smoothly restarts the backend container.
 
-## 13. Azure VM Deployment Explained
-The production application is securely hosted on an Azure Virtual Machine environment. The CD Pipeline manages updates directly by running remote commands. The VM executes standard Docker container footprints. The frontend communicates with the exposed backend port, which is securely whitelisted via configured Azure Network Security Group (NSG) rules.
+## 13. Oracle VM Deployment Explained
+The production application is securely hosted on an Oracle Virtual Machine environment. The CD Pipeline manages updates directly by running remote commands. The VM executes standard Docker container footprints. The frontend communicates with the exposed backend port, which is securely whitelisted via configured Oracle Virtual Cloud Network (VCN) security rules.
 
 ## 14. Example API Endpoints
 
