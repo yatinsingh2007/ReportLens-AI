@@ -1,48 +1,50 @@
-name: CI Pipeline
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  - name: Setup Node.js v20
+    uses: actions/setup-node@v4
+    with:
+      node-version: "20"
 
-jobs:
-  ci-pipeline:
-    name: Build, Test, and Verify
-    runs-on: ubuntu-latest
+  - name: Build OCR Docker image
+    run: docker build -t reportlens-ocr:latest ./server
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js v20
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+  - name: Run OCR container
+    env:
+      BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_URL: ${{ secrets.GEMINI_URL }}
+    run: |
+      docker run -d \
+        -p $BACKEND_PORT:$BACKEND_PORT \
+        -e DATABASE_URL="$DATABASE_URL" \
+        -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+        -e GEMINI_URL="$GEMINI_URL" \
+        --name ocr-test-container \
+        reportlens-ocr:latest
 
-      - name: Build OCR Docker image
-        run: |
-          docker build -t reportlens-ocr:latest ./server
+  - name: Wait for server to start
+    run: sleep 8
 
-      - name: Run OCR container
-        run: |
-          docker run -d -p ${{ secrets.BACKEND_PORT }}:${{ secrets.BACKEND_PORT }} -e DATABASE_URL="${{ secrets.DATABASE_URL }}" -e GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" -e GEMINI_URL="${{ secrets.GEMINI_URL }}" --name ocr-test-container reportlens-ocr:latest
+  - name: Show running containers
+    run: docker ps
 
-      - name: Wait for server to start
-        run: sleep 8
+  - name: Verify server health
+    env:
+      BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
+    run: |
+      if curl -f http://localhost:$BACKEND_PORT/health; then
+        echo "Server is responding correctly."
+      else
+        echo "Server health check failed."
+        docker logs ocr-test-container
+        exit 1
+      fi
 
-      - name: Verify server health
-        run: |
-          if curl -f http://localhost:${{ secrets.BACKEND_PORT }}/health; then
-            echo "Server is responding correctly."
-          else
-            echo "Server health check failed."
-            docker logs ocr-test-container
-            exit 1
-          fi
-
-      - name: Cleanup container
-        if: always()
-        run: |
-          docker stop ocr-test-container || true
-          docker rm ocr-test-container || true
+  - name: Cleanup container
+    if: always()
+    run: |
+      docker stop ocr-test-container || true
+      docker rm ocr-test-container || true
