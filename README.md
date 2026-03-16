@@ -66,7 +66,7 @@ Organizations and individuals often deal with exhaustive volumes of documentatio
 ## 6. Project Structure
 ```text
 repo/
-├─ client/                  # Frontend application (Next.js/React)
+├─ client/                  # Frontend application (Next.js)
 │
 ├─ server/                  # Backend application (Node.js/Express)
 │  ├─ Dockerfile            # Container definition for the backend
