@@ -1,26 +1,23 @@
 #!/bin/bash
-export PATH=$PATH:/usr/bin:/usr/local/bin
 set -e
 
-APP_NAME="ocr-app"
-IMAGE_NAME="reportlens-ocr"
-PORT=${PORT:-3000}
 APP_DIR="$HOME/app"
 CLIENT_DIR="$APP_DIR/client"
 SERVER_DIR="$APP_DIR/server"
 
-echo "Starting deployment..."
+BACKEND_CONTAINER="ocr-backend"
+BACKEND_IMAGE="reportlens-backend"
+
+echo "🚀 Starting deployment..."
 
 # Ensure repo exists
 if [ ! -d "$APP_DIR" ]; then
-  echo "Cloning repository..."
   git clone https://github.com/yatinsingh2007/ReportLens-AI.git $APP_DIR
 fi
 
 cd $APP_DIR
 
-# FORCE SYNC (critical)
-echo "Syncing latest code..."
+echo "🔄 Syncing code..."
 git fetch origin
 git reset --hard origin/main
 
@@ -28,62 +25,62 @@ git reset --hard origin/main
 # BACKEND (Docker)
 # =========================
 
-echo "🔨 Building backend image..."
-docker build -t $IMAGE_NAME $SERVER_DIR
+echo "🔨 Building backend..."
+docker build -t $BACKEND_IMAGE $SERVER_DIR
 
-if docker ps -q --filter "name=$APP_NAME" | grep -q .; then
-  echo "Stopping container..."
-  docker stop $APP_NAME
-fi
-
-if docker ps -aq --filter "name=$APP_NAME" | grep -q .; then
-  echo "🧹 Removing container..."
-  docker rm $APP_NAME
-fi
+docker stop $BACKEND_CONTAINER || true
+docker rm $BACKEND_CONTAINER || true
 
 echo "🚀 Starting backend..."
 docker run -d \
-  --name $APP_NAME \
+  --name $BACKEND_CONTAINER \
   --restart always \
-  -p $PORT:$PORT \
+  -p 3000:3000 \
   -e DATABASE_URL="$DATABASE_URL" \
   -e GEMINI_API_KEY="$GEMINI_API_KEY" \
   -e GEMINI_URL="$GEMINI_URL" \
   -e JWT_SECRET="$JWT_SECRET" \
-  -e PORT="$PORT" \
-  $IMAGE_NAME
+  $BACKEND_IMAGE
 
 # =========================
-# FRONTEND (Build + nginx)
+# FRONTEND (Node, no Docker)
 # =========================
 
-echo "📦 Building frontend..."
+echo "📦 Setting up frontend..."
 
 cd $CLIENT_DIR
 
-npm install
+# Install only if needed
+if [ ! -d "node_modules" ]; then
+  npm ci
+fi
+
+echo "🔨 Building frontend..."
 npm run build
 
-echo "Moving build to nginx..."
+echo "🚀 Starting frontend..."
 
-sudo rm -rf /var/www/html/*
-sudo cp -r dist/* /var/www/html/
+# Kill existing process
+pkill -f "next start" || true
 
-# Restart nginx to pick up new files
-sudo systemctl restart nginx
+# Start Next.js
+nohup npm run start -- -p 3001 > frontend.log 2>&1 &
+
+sleep 3
+
+# Verify frontend
+if ! curl -f http://localhost:3001 > /dev/null; then
+  echo "❌ Frontend failed"
+  exit 1
+fi
 
 # =========================
 # HEALTH CHECK
 # =========================
 
-echo "⏳ Waiting for backend..."
-sleep 5
+echo "⏳ Checking backend..."
+sleep 3
 
-echo "🔍 Checking backend..."
-if curl -f http://localhost:$PORT/health; then
-  echo "Deployment successful!"
-else
-  echo "Backend failed!"
-  docker logs $APP_NAME
-  exit 1
-fi
+curl -f http://localhost:3000/health || (echo "❌ Backend failed" && exit 1)
+
+echo "✅ Deployment successful!"
