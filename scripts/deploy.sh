@@ -15,7 +15,7 @@ echo "Starting deployment..."
 # 1. Ensure repo exists
 if [ ! -d "$APP_DIR" ]; then
   echo "Cloning repository..."
-  git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git $APP_DIR
+  git clone https://github.com/yatinsingh2007/ReportLens-AI.git $APP_DIR
 fi
 
 cd $APP_DIR
