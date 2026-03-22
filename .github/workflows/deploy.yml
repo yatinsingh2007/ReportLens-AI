@@ -30,7 +30,9 @@ jobs:
             cd $HOME/app
 
             # Pull latest code
-            git pull origin main
+            echo "🔄 Syncing latest code..."
+            git fetch origin
+            git reset --hard origin/main
 
             # Ensure deploy script is executable
             chmod +x scripts/deploy.sh
