@@ -42,15 +42,15 @@ if docker ps -aq --filter "name=$APP_NAME" | grep -q .; then
 fi
 
 echo "🚀 Starting backend..."
-docker run -d 
-  --name $APP_NAME 
-  --restart always 
-  -p $PORT:$PORT 
-  -e DATABASE_URL="$DATABASE_URL" 
-  -e GEMINI_API_KEY="$GEMINI_API_KEY" 
-  -e GEMINI_URL="$GEMINI_URL" 
-  -e JWT_SECRET="$JWT_SECRET" 
-  -e PORT="$PORT" 
+docker run -d \
+  --name $APP_NAME \
+  --restart always \
+  -p $PORT:$PORT \
+  -e DATABASE_URL="$DATABASE_URL" \
+  -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+  -e GEMINI_URL="$GEMINI_URL" \
+  -e JWT_SECRET="$JWT_SECRET" \
+  -e PORT="$PORT" \
   $IMAGE_NAME
 
 # =========================
