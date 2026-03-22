@@ -1,0 +1,47 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VM via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            echo "🚀 Connecting to VM..."
+
+            # Ensure app directory exists
+            if [ ! -d "$HOME/app" ]; then
+              git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git $HOME/app
+            fi
+
+            cd $HOME/app
+
+            # Pull latest code
+            git pull origin main
+
+            # Ensure deploy script is executable
+            chmod +x scripts/deploy.sh
+
+            # Export environment variables for script
+            export PORT=${{ secrets.BACKEND_PORT }}
+            export DATABASE_URL="${{ secrets.DATABASE_URL }}"
+            export GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+            export GEMINI_URL="${{ secrets.GEMINI_URL }}"
+            export JWT_SECRET="${{ secrets.JWT_SECRET }}"
+
+            # Run deployment script
+            ./scripts/deploy.sh
+
+            echo "✅ CD pipeline completed successfully"
