@@ -35,7 +35,7 @@ echo "🚀 Starting backend..."
 docker run -d \
   --name $BACKEND_CONTAINER \
   --restart always \
-  -p BACKEND_PORT:"$PORT" \
+  -p PORT:"$PORT" \
   -e DATABASE_URL="$DATABASE_URL" \
   -e GEMINI_API_KEY="$GEMINI_API_KEY" \
   -e GEMINI_URL="$GEMINI_URL" \
