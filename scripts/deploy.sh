@@ -8,7 +8,7 @@ SERVER_DIR="$APP_DIR/server"
 BACKEND_CONTAINER="ocr-backend"
 BACKEND_IMAGE="reportlens-backend"
 
-echo "🚀 Starting deployment..."
+echo "Starting deployment..."
 
 # Ensure repo exists
 if [ ! -d "$APP_DIR" ]; then
@@ -46,7 +46,7 @@ docker run -d \
 # FRONTEND (Node, no Docker)
 # =========================
 
-echo "📦 Setting up frontend..."
+echo "Setting up frontend..."
 
 cd $CLIENT_DIR
 
@@ -55,10 +55,10 @@ if [ ! -d "node_modules" ]; then
   npm ci
 fi
 
-echo "🔨 Building frontend..."
+echo "Building frontend..."
 npm run build
 
-echo "🚀 Starting frontend..."
+echo "Starting frontend..."
 
 # Kill existing process
 pkill -f "next start" || true
@@ -70,7 +70,7 @@ sleep 3
 
 # Verify frontend
 if ! curl -f http://localhost:3001 > /dev/null; then
-  echo "❌ Frontend failed"
+  echo "Frontend failed"
   exit 1
 fi
 
@@ -81,6 +81,6 @@ fi
 echo "⏳ Checking backend..."
 sleep 3
 
-curl -f http://localhost:3000/health || (echo "❌ Backend failed" && exit 1)
+curl -f http://localhost:3000/health || (echo "Backend failed" && exit 1)
 
 echo "✅ Deployment successful!"
