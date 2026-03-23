@@ -35,16 +35,16 @@ docker stop $BACKEND_CONTAINER || true
 docker rm $BACKEND_CONTAINER || true
 
 echo "Starting backend..."
-docker run -d 
-  --name $BACKEND_CONTAINER 
-  --restart always 
-  -p ${PORT}:${PORT} 
-  -e PORT=${PORT} 
-  -e DATABASE_URL="$DATABASE_URL" 
-  -e GEMINI_API_KEY="$GEMINI_API_KEY" 
-  -e GEMINI_URL="$GEMINI_URL" 
-  -e JWT_SECRET="$JWT_SECRET" 
-  $BACKEND_IMAGE
+docker run -d \
+  --name "$BACKEND_CONTAINER" \
+  --restart always \
+  -p "${PORT}:${PORT}" \
+  -e PORT="${PORT}" \
+  -e DATABASE_URL="$DATABASE_URL" \
+  -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+  -e GEMINI_URL="$GEMINI_URL" \
+  -e JWT_SECRET="$JWT_SECRET" \
+  "$BACKEND_IMAGE"
 
 sleep 3
 
