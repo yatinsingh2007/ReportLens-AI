@@ -41,7 +41,7 @@ jobs:
 
       - name: Build backend image
         run: |
-          docker build -f build/server.Dockerfile -t backend-test ./server
+          docker build -f build/Dockerfile.server -t backend-test ./server
 
       - name: Run backend container
         run: |
