@@ -39,6 +39,7 @@ jobs:
 
             # Export environment variables for script
             export PORT=${{ secrets.BACKEND_PORT }}
+            export CLIENT_PORT="${{ secrets.CLIENT_PORT || 3000 }}"
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             export GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
             export GEMINI_URL="${{ secrets.GEMINI_URL }}"

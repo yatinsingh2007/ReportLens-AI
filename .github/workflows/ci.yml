@@ -2,50 +2,124 @@ name: CI Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
-  workflow_dispatch: 
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  ci-pipeline:
+
+  # ---------------- FRONTEND ----------------
+  frontend-ci:
+    name: Frontend CI (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./client
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "./client/package-lock.json"
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+
+  # ---------------- BACKEND ----------------
+  backend-ci:
+    name: Backend CI (Node + Docker)
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - name: Build OCR Docker image
-        run: docker build -t reportlens-ocr:latest ./server
+      - name: Build backend image
+        run: |
+          docker build -f build/server.Dockerfile -t backend-test ./server
 
-      - name: Run OCR container
-        env:
-          BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_URL: ${{ secrets.GEMINI_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-        run: docker run -d -p $BACKEND_PORT:$BACKEND_PORT -e DATABASE_URL="$DATABASE_URL" -e GEMINI_API_KEY="$GEMINI_API_KEY" -e GEMINI_URL="$GEMINI_URL" -e JWT_SECRET="$JWT_SECRET" -e PORT="$BACKEND_PORT" --name ocr-test-container reportlens-ocr:latest
+      - name: Run backend container
+        run: |
+          docker run -d -p ${BACKEND_PORT}:${BACKEND_PORT} \
+            -e PORT=${BACKEND_PORT} \
+            -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            -e GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+            -e GEMINI_URL="${{ secrets.GEMINI_URL }}" \
+            --name backend-test backend-test
 
-      - name: Wait for server startup
+      - name: Wait for startup
         run: sleep 8
 
-      - name: Verify server health
-        env:
-          BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
+      - name: Test backend
         run: |
-          if curl -f http://localhost:$BACKEND_PORT/health; then
-            echo "Server running"
+          if curl -f http://localhost:${BACKEND_PORT}/health; then
+            echo "Backend OK"
           else
-            echo "Server failed"
-            docker logs ocr-test-container
+            docker logs backend-test
             exit 1
           fi
 
-      - name: Cleanup container
+      - name: Cleanup
         if: always()
         run: |
-          docker stop ocr-test-container || true
-          docker rm ocr-test-container || true
+          docker stop backend-test || true
+          docker rm backend-test || true
+
+
+  # ---------------- FULL STACK ----------------
+  full-stack-ci:
+    name: Full Stack CI (Docker Compose)
+    runs-on: ubuntu-latest
+    needs: [frontend-ci, backend-ci]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Create env file (required for compose)
+      - name: Create .env
+        run: |
+          echo "BACKEND_PORT=${{ secrets.BACKEND_PORT }}" >> .env
+          echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}" >> .env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          echo "GEMINI_URL=${{ secrets.GEMINI_URL }}" >> .env
+
+      # Build + run full system
+      - name: Run docker-compose
+        run: |
+          docker compose up -d --build
+
+      - name: Wait for services
+        run: sleep 10
+
+      # Backend test
+      - name: Test backend
+        run: |
+          if curl -f http://localhost:4135/health; then
+            echo "Backend OK"
+          else
+            docker logs $(docker ps -q --filter "name=server")
+            exit 1
+          fi
+
+      # Frontend test
+      - name: Test frontend
+        run: |
+          if curl -f http://localhost:3000; then
+            echo "Frontend OK"
+          else
+            docker logs $(docker ps -q --filter "name=client")
+            exit 1
+          fi
+
+      # Cleanup
+      - name: Cleanup
+        if: always()
+        run: docker compose down
