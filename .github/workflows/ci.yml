@@ -18,7 +18,7 @@ jobs:
         working-directory: ./client
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build backend image
         run: |
@@ -79,7 +79,7 @@ jobs:
     needs: [frontend-ci, backend-ci]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Create env file (required for compose)
       - name: Create .env
