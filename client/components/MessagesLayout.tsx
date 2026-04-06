@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import ReactMarkdown from "react-markdown";
+import { useEffect, useRef, useMemo } from "react";
+import ReactMarkdown, { Components } from "react-markdown";
 import { cn } from "@/lib/utils";
 import { Bot, User, FileText } from "lucide-react";
 
@@ -21,7 +21,7 @@ interface MessagesLayoutProps {
 
 export default function MessagesLayout({ messages, isDark = true }: MessagesLayoutProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const list = Array.isArray(messages) ? messages : [];
+  const list = useMemo(() => Array.isArray(messages) ? messages : [], [messages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -84,7 +84,7 @@ export default function MessagesLayout({ messages, isDark = true }: MessagesLayo
                 className={cn(
                   "relative max-w-[85%] px-5 py-3.5 text-sm md:text-base shadow-sm rounded-2xl",
                   isUser
-                    ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-tr-none"
+                    ? isDark ? "bg-linear-to-r from-teal-500 to-cyan-500 text-white rounded-tr-none" : "bg-linear-to-br from-teal-100 to-cyan-100 text-slate-900 rounded-tr-none"
                     : isDark
                       ? "bg-zinc-800/80 text-zinc-100 rounded-tl-none border border-zinc-700"
                       : "bg-white text-slate-900 rounded-tl-none border border-slate-200"
@@ -92,14 +92,22 @@ export default function MessagesLayout({ messages, isDark = true }: MessagesLayo
               >
                 <ReactMarkdown
                   components={{
-                    code({ className, children, ...props }: any) {
+                    code({ className, children, ...props }: React.ComponentPropsWithoutRef<"code">) {
                       const match = /language-(\w+)/.exec(className || "");
                       const isInline = !match && !String(children).includes("\n");
-                      return isInline
-                        ? <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded font-mono text-[0.9em]" {...props}>{children}</code>
-                        : <div className="overflow-x-auto my-3 rounded-md bg-neutral-900 p-3 text-white text-xs md:text-sm"><code className={className} {...props}>{children}</code></div>;
-                    }
-                  }}
+                      return isInline ? (
+                        <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded font-mono text-[0.9em]" {...props}>
+                          {children}
+                        </code>
+                      ) : (
+                        <div className="overflow-x-auto my-3 rounded-md bg-neutral-900 p-3 text-white text-xs md:text-sm">
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        </div>
+                      );
+                    },
+                  } as Partial<Components>}
                 >
                   {message.content}
                 </ReactMarkdown>

@@ -1,8 +1,5 @@
 "use client"
-import React, { useEffect } from "react"
-import { ChatRoom } from "@/components/DashboardPage"
-
-import { createContext } from "react";
+import React, { useCallback, createContext, useState } from "react"
 
 interface ChatRoomContextType {
     chatId : string
@@ -11,15 +8,17 @@ interface ChatRoomContextType {
 
 export const ChatRoomContext = createContext<ChatRoomContextType>({
     chatId : "" ,
-    setRoomId : (chatId : string) => {}
+    setRoomId : () => {}
 });
 
 
 export const ChatRoomProvider = ({ children } : { children : React.ReactNode }) => {
-    const [chatId, setChatId] = React.useState<string>("");
-    const setRoomId = (chatId : string) => {
+    const [chatId, setChatId] = useState<string>("");
+    
+    const setRoomId = useCallback((chatId : string) => {
         setChatId(chatId)
-    }
+    }, []);
+
     return (
         <ChatRoomContext.Provider value={{ chatId, setRoomId }}>
             {children}

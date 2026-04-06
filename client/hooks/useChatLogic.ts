@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useContext } from "react";
+import { useState, useRef, useEffect, useContext, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { api } from "@/lib/axios";
 import { isAxiosError } from "axios";
@@ -26,7 +26,7 @@ export function useChatLogic() {
         if (!isAuthenticated) router.push('/login');
     }, [isAuthenticated, router]);
 
-    const callChatIds = async (): Promise<void> => {
+    const callChatIds = useCallback(async (): Promise<void> => {
         try {
             const res = await api.get('/api/chat/getAllChatIds', { withCredentials: true });
             const chatData: ChatRoom[] = res.data;
@@ -47,9 +47,9 @@ export function useChatLogic() {
                 if (err.response?.status === 404) setShowDashboard(false);
             }
         }
-    };
+    }, [router, setRoomId]);
 
-    const getAllMessagesOfChat = async (currentChatId: string): Promise<void> => {
+    const getAllMessagesOfChat = useCallback(async (currentChatId: string): Promise<void> => {
         try {
             const res = await api.get(`/api/chat/messages/${currentChatId}`, { withCredentials: true });
             setMessages(res.data);
@@ -57,18 +57,18 @@ export function useChatLogic() {
             console.error("Error fetching messages:", err);
             toast.error("Could not load chat history");
         }
-    };
+    }, []);
 
     useEffect(() => {
         callChatIds();
-    }, []);
+    }, [callChatIds]);
 
     useEffect(() => {
         if (!chatId) return;
         getAllMessagesOfChat(chatId);
-    }, [chatId]);
+    }, [chatId, getAllMessagesOfChat]);
 
-    const handleFileUpload = async (files: File[], query?: string): Promise<void | string> => {
+    const handleFileUpload = useCallback(async (files: File[], query?: string): Promise<void | string> => {
         if (!chatId) {
             toast.error("Please select a chat first");
             return;
@@ -109,9 +109,9 @@ export function useChatLogic() {
             toast.error("Failed to upload file");
             setMessages((prev) => prev.filter((m) => m.id !== optimisticFileMessage.id));
         }
-    };
+    }, [chatId]);
 
-    const handleCreateChat = async (e?: React.MouseEvent) => {
+    const handleCreateChat = useCallback(async (e?: React.MouseEvent) => {
         if (e) e.preventDefault();
         try {
             const resp = await api.post("/api/chat/create", {}, { withCredentials: true });
@@ -123,28 +123,28 @@ export function useChatLogic() {
             console.error(e);
             toast.error("Failed to create conversation");
         }
-    };
+    }, [callChatIds]);
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             setSelectedFile(e.target.files[0]);
         }
-    };
+    }, []);
 
-    const handleRemoveStagedFile = () => {
+    const handleRemoveStagedFile = useCallback(() => {
         setSelectedFile(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
-    };
+    }, []);
 
-    const triggerFileInput = () => {
+    const triggerFileInput = useCallback(() => {
         fileInputRef.current?.click();
-    };
+    }, []);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value);
-    };
+    }, []);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!inputValue.trim() && !selectedFile) return;
 
@@ -180,7 +180,7 @@ export function useChatLogic() {
         } finally {
             setIsGenerating(false);
         }
-    };
+    }, [inputValue, selectedFile, handleFileUpload, chatId]);
 
     return {
         messages, setMessages,

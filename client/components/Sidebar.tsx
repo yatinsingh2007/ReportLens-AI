@@ -13,7 +13,6 @@ interface SidebarContentProps {
   handleCreateChat: () => void;
   chatRooms: ChatRoom[];
   setMessages: (messages: Message[]) => void;
-  handleFileUpload: (files: File[]) => void;
   isDark?: boolean;
   toggleTheme?: () => void;
 }
@@ -22,7 +21,6 @@ const SidebarContent = ({
   handleCreateChat,
   chatRooms,
   setMessages,
-  handleFileUpload,
   isDark = true,
   toggleTheme,
 }: SidebarContentProps) => {

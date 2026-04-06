@@ -11,7 +11,6 @@ export function MobileSidebar({
     handleCreateChat,
     chatRooms,
     setMessages,
-    handleFileUpload,
 }: {
     isMobileMenuOpen: boolean;
     setIsMobileMenuOpen: (v: boolean) => void;
@@ -20,7 +19,6 @@ export function MobileSidebar({
     handleCreateChat: (e?: React.MouseEvent) => Promise<void>;
     chatRooms: ChatRoom[];
     setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
-    handleFileUpload: (files: File[], query?: string) => Promise<void | string>;
 }) {
     if (!isMobileMenuOpen) return null;
 
@@ -47,7 +45,6 @@ export function MobileSidebar({
                     handleCreateChat={handleCreateChat}
                     chatRooms={chatRooms}
                     setMessages={setMessages}
-                    handleFileUpload={handleFileUpload}
                     isDark={isDark}
                     toggleTheme={toggleTheme}
                 />

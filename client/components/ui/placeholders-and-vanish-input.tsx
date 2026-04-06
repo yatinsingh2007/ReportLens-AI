@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useCanvasAnimation } from "@/hooks/useCanvasAnimation";
 
@@ -21,19 +21,20 @@ export function PlaceholdersAndVanishInput({
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const startAnimation = () => {
+  const startAnimation = useCallback(() => {
     intervalRef.current = setInterval(() => {
       setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
     }, 3000);
-  };
-  const handleVisibilityChange = () => {
+  }, [placeholders.length]);
+
+  const handleVisibilityChange = useCallback(() => {
     if (document.visibilityState !== "visible" && intervalRef.current) {
       clearInterval(intervalRef.current); // Clear the interval when the tab is not visible
       intervalRef.current = null;
     } else if (document.visibilityState === "visible") {
       startAnimation(); // Restart the interval when the tab becomes visible
     }
-  };
+  }, [startAnimation]);
 
   useEffect(() => {
     startAnimation();
@@ -45,7 +46,7 @@ export function PlaceholdersAndVanishInput({
       }
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [placeholders]);
+  }, [placeholders, startAnimation, handleVisibilityChange]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState("");
@@ -65,24 +66,24 @@ export function PlaceholdersAndVanishInput({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) =>     {
     if (e.key === "Enter" && !animating) {
       vanishAndSubmit();
-      onSubmit && onSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+      onSubmit?.(e as unknown as React.FormEvent<HTMLFormElement>);
     }
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     vanishAndSubmit();
-    onSubmit && onSubmit(e);
+    onSubmit?.(e);
   };
   const formBg = isDark
     ? "bg-zinc-800 border border-zinc-600 shadow-lg shadow-black/20"
-    : "bg-white border border-slate-200 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),_0px_1px_0px_0px_rgba(25,28,33,0.02),_0px_0px_0px_1px_rgba(25,28,33,0.08)]"
-  const formBgFilled = value && (isDark ? "bg-zinc-700" : "bg-slate-50")
-  const inputText = isDark ? "text-zinc-100 placeholder:text-zinc-500" : "text-slate-900 placeholder:text-slate-500"
+    : "bg-white border border-slate-200 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),_0px_1px_0px_0px_rgba(25,28,33,0.02),_0px_0px_0px_1px_rgba(25,28,33,0.08)]";
+  const formBgFilled = value && (isDark ? "bg-zinc-700" : "bg-slate-50");
+  const inputText = isDark ? "text-zinc-100 placeholder:text-zinc-500" : "text-slate-900 placeholder:text-slate-500";
   const submitBtn = isDark
     ? "disabled:bg-zinc-700 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white"
-    : "disabled:bg-slate-100 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white"
-  const placeholderText = isDark ? "text-zinc-500" : "text-slate-500"
+    : "disabled:bg-slate-100 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white";
+  const placeholderText = isDark ? "text-zinc-500" : "text-slate-500";
 
   return (
     <form
@@ -105,7 +106,7 @@ export function PlaceholdersAndVanishInput({
         onChange={(e) => {
           if (!animating) {
             setValue(e.target.value);
-            onChange && onChange(e);
+            onChange?.(e);
           }
         }}
         onKeyDown={handleKeyDown}

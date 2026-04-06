@@ -1,18 +1,9 @@
 "use client"
 
-import React, { useState, useRef, useEffect, useContext } from "react"
-import Link from "next/link"
+import React, { useContext } from "react"
 import { ThemeContext } from "@/context/ThemeContext"
-import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input"
-import { api } from "@/lib/axios"
-import { toast } from "react-hot-toast"
-import { IconPlus, IconMenu2, IconX, IconUser } from "@tabler/icons-react"
-import { Sun, Moon } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { isAxiosError } from "axios"
 import MessagesLayout from "@/components/MessagesLayout"
 import SidebarContent from "@/components/Sidebar"
-import { ChatRoomContext } from "@/context/ChatRoomContext"
 import { AiThinkingSkeleton } from "@/components/AiThinkingSkeleton"
 import { MobileSidebar } from "@/components/dashboard/MobileSidebar"
 import { WelcomeScreen } from "@/components/dashboard/WelcomeScreen"
@@ -35,8 +26,8 @@ export interface ChatRoom {
 
 export default function DashboardPage() {
     const { theme, toggleTheme } = useContext(ThemeContext)
-    const { chatId } = useContext(ChatRoomContext)
     const isDark = theme === "dark"
+
 
     const {
         messages, setMessages,
@@ -47,7 +38,6 @@ export default function DashboardPage() {
         selectedFile,
         isMobileMenuOpen, setIsMobileMenuOpen,
         fileInputRef,
-        handleFileUpload,
         handleCreateChat,
         handleFileSelect,
         handleRemoveStagedFile,
@@ -79,7 +69,6 @@ export default function DashboardPage() {
                     handleCreateChat={handleCreateChat}
                     chatRooms={chatRooms}
                     setMessages={setMessages}
-                    handleFileUpload={handleFileUpload}
                     isDark={isDark}
                     toggleTheme={toggleTheme}
                 />
@@ -93,7 +82,6 @@ export default function DashboardPage() {
                 handleCreateChat={handleCreateChat}
                 chatRooms={chatRooms}
                 setMessages={setMessages}
-                handleFileUpload={handleFileUpload}
             />
 
             <div

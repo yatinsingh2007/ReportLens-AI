@@ -16,7 +16,6 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 // Demo user data - replace with real API later
 const DEMO_USER = {
@@ -92,12 +91,12 @@ export default function ProfilePage() {
         >
           <div
             className={`h-24 md:h-32 ${
-              isDark ? "bg-gradient-to-br from-teal-900/50 to-cyan-900/50" : "bg-gradient-to-br from-teal-100 to-cyan-100"
+              isDark ? "bg-linear-to-br from-teal-900/50 to-cyan-900/50" : "bg-linear-to-br from-teal-100 to-cyan-100"
             }`}
           />
           <div className="relative px-6 pb-8 md:px-8">
             <div className="-mt-12 flex flex-col items-center text-center sm:flex-row sm:items-end sm:text-left gap-4">
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl border-4 bg-gradient-to-br from-teal-500 to-cyan-500 text-2xl font-bold text-white shadow-lg border-zinc-900/50 dark:border-zinc-900">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl border-4 bg-linear-to-br from-teal-500 to-cyan-500 text-2xl font-bold text-white shadow-lg border-zinc-900/50 dark:border-zinc-900">
                 {initials}
               </div>
               <div className="flex-1 pb-1">
